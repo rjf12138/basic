@@ -1,0 +1,1 @@
+/usr/bin/c++  -O3 -DNDEBUG   CMakeFiles/basic.dir/main/ByteBuffer_Test.cc.o CMakeFiles/basic.dir/src/logger.cc.o CMakeFiles/basic.dir/src/byte_buffer.cc.o CMakeFiles/basic.dir/src/wejson.cc.o  -o basic   -L/home/ruanjian/workspace/project_v/basic/./lib/release  -Wl,-rpath,/home/ruanjian/workspace/project_v/basic/./lib/release -lgtest -lpthread 

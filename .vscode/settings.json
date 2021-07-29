@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "atomic": "cpp",
+        "*.tcc": "cpp",
+        "chrono": "cpp",
+        "iterator": "cpp",
+        "vector": "cpp",
+        "array": "cpp",
+        "deque": "cpp",
+        "string": "cpp",
+        "memory_resource": "cpp",
+        "string_view": "cpp",
+        "unordered_map": "cpp",
+        "initializer_list": "cpp",
+        "regex": "cpp"
+    }
+}
