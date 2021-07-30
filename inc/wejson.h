@@ -27,70 +27,70 @@ enum NumberType {
     DOUBLE_TYPE = 10031,
 };
 
-class JsonIndex {
-public:
-    JsonIndex(void);
-    JsonIndex(const uint32_t &index);
-    JsonIndex(const int32_t &index);
-    JsonIndex(const string &key);
-    JsonIndex(const char *key);
-    ~JsonIndex(void);
+// class JsonIndex {
+// public:
+//     JsonIndex(void);
+//     JsonIndex(const uint32_t &index);
+//     JsonIndex(const int32_t &index);
+//     JsonIndex(const string &key);
+//     JsonIndex(const char *key);
+//     ~JsonIndex(void);
 
-    operator uint32_t();
-    operator string();
+//     operator uint32_t();
+//     operator string();
 
-    JsonIndex& operator=(const uint32_t &index);
-    JsonIndex& operator=(const string &key);
+//     JsonIndex& operator=(const uint32_t &index);
+//     JsonIndex& operator=(const string &key);
 
-    ValueType get_type() const {return index_type_;}
-private:
-    ValueType index_type_; // 只能是字符串型和数字型
-    uint32_t index_;
-    string key_;
-};
+//     ValueType get_type() const {return index_type_;}
+// private:
+//     ValueType index_type_; // 只能是字符串型和数字型
+//     uint32_t index_;
+//     string key_;
+// };
 
-class JsonIter : public MsgRecord {
-    typedef map<string, ValueTypeCast>::iterator ObjIter;
-    typedef map<string, ValueTypeCast>::const_iterator ConstObjIter;
-    typedef vector<ValueTypeCast>::iterator ArrIter;
-    typedef vector<ValueTypeCast>::const_iterator ConstArrIter;
-public:
-    JsonIter(void);
-    JsonIter(const ObjIter &obj_iter);
-    JsonIter(const ArrIter &arr_iter);
-    ~JsonIter(void);
+// class JsonIter : public MsgRecord {
+//     typedef map<string, ValueTypeCast>::iterator ObjIter;
+//     typedef map<string, ValueTypeCast>::const_iterator ConstObjIter;
+//     typedef vector<ValueTypeCast>::iterator ArrIter;
+//     typedef vector<ValueTypeCast>::const_iterator ConstArrIter;
+// public:
+//     JsonIter(void);
+//     JsonIter(const ObjIter &obj_iter);
+//     JsonIter(const ArrIter &arr_iter);
+//     ~JsonIter(void);
 
-    operator ObjIter() const;
-    operator ConstObjIter() const;
-    operator ArrIter() const;
-    operator ConstArrIter() const;
+//     operator ObjIter() const;
+//     operator ConstObjIter() const;
+//     operator ArrIter() const;
+//     operator ConstArrIter() const;
 
-    JsonIter& operator=(const ObjIter &iter);
-    JsonIter& operator=(const ArrIter &iter);
-    bool operator==(const JsonIter &lhs);
-    bool operator!=(const JsonIter &lhs);
+//     JsonIter& operator=(const ObjIter &iter);
+//     JsonIter& operator=(const ArrIter &iter);
+//     bool operator==(const JsonIter &lhs);
+//     bool operator!=(const JsonIter &lhs);
     
-    // 前置 ++
-    JsonIter& operator++(void);
-    // 后置 ++
-    JsonIter operator++(int);
-    // 前置 --
-    JsonIter& operator--(void);
-    // 后置 --
-    JsonIter operator--(int);
+//     // 前置 ++
+//     JsonIter& operator++(void);
+//     // 后置 ++
+//     JsonIter operator++(int);
+//     // 前置 --
+//     JsonIter& operator--(void);
+//     // 后置 --
+//     JsonIter operator--(int);
 
-    // 访问当前迭代器的值，数组first返回""
-    string first();
-    ValueTypeCast& second();
+//     // 访问当前迭代器的值，数组first返回""
+//     string first();
+//     ValueTypeCast& second();
 
-    ValueType get_iter_type() const {return iter_type_;}
+//     ValueType get_iter_type() const {return iter_type_;}
 
-private:
-    ValueType iter_type_; // 只能是字符串型和数字型
-    pair<string, ValueTypeCast*> ret_;
-    ObjIter obj_iter_;
-    ArrIter arr_iter_;
-};
+// private:
+//     ValueType iter_type_; // 只能是字符串型和数字型
+//     pair<string, ValueTypeCast*> ret_;
+//     ObjIter obj_iter_;
+//     ArrIter arr_iter_;
+// };
 
 class JsonType : public MsgRecord {
 public:
@@ -199,37 +199,30 @@ private:
     string value_;
 };
 
-struct JsonNode {
-    ValueType type_;
-    union node
-    {
-       JsonNull null_;
-       JsonNumber number_;
-       JsonObject object_;
-       JsonString string_;
-       JsonBool bool_;
-    } node_;
-};
-
 // json 对象类型
 class JsonObject : public JsonType {
+public:
     friend ostream& operator<<(ostream &os, JsonObject &rhs);
+    typedef std::map<string, ValueTypeCast>::iterator iterator;
 public:
     explicit JsonObject(void);
     ~JsonObject(void);
 
     // 序列化和反序列化
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos) override;
-    virtual string generate(void) override;
+    virtual std::string generate(void) override;
     
     // 查找元素
-    JsonIter find(const string &key);
-    // 操作元素
-    int erase(JsonIndex &key);
+    JsonObject::iterator find(const string &key);
+    // 删除元素
+    int erase(const std::string &key);
+    JsonObject::iterator erase(JsonObject::iterator &remove_iter);
     // 当前类型为对象时添加元素
-    int add(JsonIndex key, ValueTypeCast value);
+    int add(const std::string &key, const ValueTypeCast &value);
     // 返回元素数量
-    int size(void) const {return object_val_.size();}
+    int size(void) const {return value_.size();}
+    // 清空元素
+    void clear(void) {value_.clear();}
 
     // 重载操作符
     bool operator==(const JsonObject& rhs) const;
@@ -238,14 +231,14 @@ public:
     ValueTypeCast& operator[](const string &key);
 
 public:
-    map<string, JsonNode> object_val_;
+    map<string, ValueTypeCast> value_;
 };
 
 // json 数组类型
 class JsonArray : public JsonType {
-    friend ostream& operator<<(ostream &os, JsonArray &rhs);
 public:
-    typedef vector<>
+    friend ostream& operator<<(ostream &os, JsonArray &rhs);
+    typedef std::vector<ValueTypeCast>::iterator iterator;
 public:
     explicit JsonArray(void);
     ~JsonArray(void);
@@ -255,104 +248,86 @@ public:
     virtual string generate(void) override;
 
     // 数组或是对象删除元素
-    int erase(JsonIndex index);
+    iterator erase(const int &index);
+    iterator erase(const iterator &remove_iter);
     // 当前添加元素
-    int add(ValueTypeCast value);
+    int add(const ValueTypeCast &value);
     // 返回元素数量
-    int size(void) const {return array_val_.size();}
+    int size(void) const {return value_.size();}
+    // 清空元素
+    void clear(void) {value_.clear();}
 
     // 重载操作符
     ValueTypeCast& operator[](size_t key);
     const ValueTypeCast& operator[](const size_t key) const;
+
     bool operator==(const JsonArray& rhs) const;
     bool operator!=(const JsonArray& rhs) const; 
+
     JsonArray& operator=(JsonArray rhs);
 
 public:
-    vector<JsonNode> array_val_;
+    vector<ValueTypeCast> value_;
 };
 
 // json中转类型：可以安装当前存储的类型输出或是接收不同的类型
-// class ValueTypeCast : public JsonType {
-//     friend ostream& operator<<(ostream &os, ValueTypeCast &rhs);
-//     friend JsonObject;
-//     friend JsonArray;
-// public:
-//     ValueTypeCast(void);
-//     ValueTypeCast(const JsonBool &value);
-//     ValueTypeCast(const JsonNumber &value);
-//     ValueTypeCast(const JsonString &value);
-//     ValueTypeCast(const JsonObject &value);
-//     ValueTypeCast(const JsonArray &value);
-//     ValueTypeCast(const JsonNull &value);
+class ValueTypeCast : public JsonType {
+    friend ostream& operator<<(ostream &os, ValueTypeCast &rhs);
+    friend JsonObject;
+    friend JsonArray;
+public:
+    ValueTypeCast(void);
+    ValueTypeCast(const JsonBool &value);
+    ValueTypeCast(const JsonNumber &value);
+    ValueTypeCast(const JsonString &value);
+    ValueTypeCast(const JsonObject &value);
+    ValueTypeCast(const JsonArray &value);
+    ValueTypeCast(const JsonNull &value);
     
-//     ValueTypeCast(const bool &value);
-//     ValueTypeCast(const int &value);
-//     ValueTypeCast(const double &value);
-//     ValueTypeCast(const string &value);
-//     ValueTypeCast(const char *value);
+    ValueTypeCast(const bool &value);
+    ValueTypeCast(const int &value);
+    ValueTypeCast(const double &value);
+    ValueTypeCast(const string &value);
+    ValueTypeCast(const char *value);
 
-//     ValueTypeCast(const ValueTypeCast& value); // 只能使用引用不然会报错
-//     ~ValueTypeCast(void);
+    ValueTypeCast(const ValueTypeCast& value); // 只能使用引用不然会报错
+    ~ValueTypeCast(void);
 
-//     operator JsonNumber();
-//     operator JsonString();
-//     operator JsonBool();
-//     operator JsonObject();
-//     operator JsonArray();
-//     operator JsonNull();
+    operator JsonNumber();
+    operator JsonString();
+    operator JsonBool();
+    operator JsonObject();
+    operator JsonArray();
+    operator JsonNull();
 
-//     ValueTypeCast& operator=(JsonBool val);
-//     ValueTypeCast& operator=(JsonNumber val);
-//     ValueTypeCast& operator=(JsonString val);
-//     ValueTypeCast& operator=(JsonObject val);
-//     ValueTypeCast& operator=(JsonArray val);
-//     ValueTypeCast& operator=(JsonNull val);
-//     ValueTypeCast& operator=(ValueTypeCast val);
+    ValueTypeCast& operator=(JsonBool val);
+    ValueTypeCast& operator=(JsonNumber val);
+    ValueTypeCast& operator=(JsonString val);
+    ValueTypeCast& operator=(JsonObject val);
+    ValueTypeCast& operator=(JsonArray val);
+    ValueTypeCast& operator=(JsonNull val);
+    ValueTypeCast& operator=(ValueTypeCast val);
 
-//     bool operator==(const ValueTypeCast &rhs) const;
-//     bool operator!=(const ValueTypeCast &rhs) const;
-   
-//     // 访问json值
-//     ValueTypeCast& operator[](JsonIndex key);
+    bool operator==(const ValueTypeCast& rhs) const;
+    bool operator!=(const ValueTypeCast& rhs) const;
 
-//     // 解析json类型
-//     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos);
-//     // 非格式化输出 json
-//     virtual string generate(void);
-//     // 格式化输出 json
-//     virtual string format_json(void);
+private:
+    ValueType type_;
+    JsonNull null_;
+    JsonNumber number_;
+    JsonObject object_;
+    JsonArray array_;
+    JsonString string_;
+    JsonBool bool_;
 
-//     // 查找元素（只能同级查找）
-//     JsonIter find(const string &key);
-//     // 移除元素元素
-//     int erase(JsonIndex key);
-//     // 对象添加元素
-//     int add(JsonIndex key, ValueTypeCast value);
-//     // 数组添加元素
-//     int add(ValueTypeCast value);
-//     // 返回元素数量
-//     int size(void);
-    
-//     // 清空所有元素
-//     int clear(void);
-
-//     ValueType get_type(void) const {return json_value_type_;}
-    
-//     // 只有Json的数组或对象类型支持
-//     // 返回数组或是对象的起始和结束迭代器
-//     JsonIter begin(void);
-//     JsonIter end(void);
-
-// private:
-//     ValueType json_value_type_;
-//     JsonArray json_array_value_;
-//     JsonObject json_object_value_;
-//     JsonString json_string_value_;
-//     JsonNumber json_number_value_;
-//     JsonBool   json_bool_value_;
-//     JsonNull json_null_value_;
-// };
+    // ValueType json_value_type_;
+    // JsonArray json_array_value_;
+    // JsonObject json_object_value_;
+    // JsonString json_string_value_;
+    // JsonNumber json_number_value_;
+    // JsonBool   json_bool_value_;
+    // JsonNull json_null_value_;
+};
 
 class WeJson //: public ValueTypeCast 
 {
@@ -382,14 +357,14 @@ public:
     // 构建成array
     JsonArray& get_array(void);
 
-    // 返回json类型
-    ValueType get_type(void) const {return node_.type_;}
+    // // 返回json类型
+    // ValueType get_type(void) const {return node_.type_;}
 
 private:
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos);
 
-private:
-    JsonNode node_;
+// private:
+//     JsonNode node_;
 };
 
 }
