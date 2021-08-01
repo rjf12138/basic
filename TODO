@@ -1,2 +1,2 @@
-1. 修改 ByteBuffer 迭代器
-2. 修改 wejson 方法
+1. 添加 json 错误类
+2. 修改 wejson_test.cc

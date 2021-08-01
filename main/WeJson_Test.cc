@@ -235,8 +235,9 @@ TEST_F(WeJson_Test, EmptyObjectArrayTest)
 {
     WeJson js("{}");
     WeJson arr("[]");
-    js["Array"] = arr;
-    JsonArray test_arr = js["Array"];
+    JsonObject obj = js.get_object();
+    obj["Array"] = arr;
+    JsonArray test_arr = obj["Array"];
 }
 
 TEST_F(WeJson_Test, ObjectArrayTest)

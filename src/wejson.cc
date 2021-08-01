@@ -2,264 +2,9 @@
 
 namespace basic {
 
-// JsonIndex::JsonIndex(void)
-//  : index_type_(JSON_NUMBER_TYPE),
-//    index_(0),
-//    key_("")
-//    {}
-
-// JsonIndex::JsonIndex(const uint32_t &index)
-//  : index_type_(JSON_NUMBER_TYPE),
-//    index_(index),
-//    key_("")
-//    {}
-
-// JsonIndex::JsonIndex(const int32_t &index)
-//  : index_type_(JSON_NUMBER_TYPE),
-//    index_(index),
-//    key_("")
-//    {}
-
-// JsonIndex::JsonIndex(const string &key)
-//  : index_type_(JSON_STRING_TYPE),
-//    index_(0),
-//    key_(key)
-//    {}
-// JsonIndex::JsonIndex(const char *key)
-//  : index_type_(JSON_STRING_TYPE),
-//    index_(0),
-//    key_(key)
-//    {}
-// JsonIndex::~JsonIndex(void)
-// {
-// }
-
-// JsonIndex::operator uint32_t()
-// {
-//     if (index_type_ == JSON_NUMBER_TYPE) {
-//         return index_;
-//     }
-
-//     return 0;
-// }
-// JsonIndex::operator string()
-// {
-//     if (index_type_ == JSON_STRING_TYPE) {
-//         return key_;
-//     }
-
-//     return "";
-// }
-
-// JsonIndex& 
-// JsonIndex::operator=(const uint32_t &index)
-// {
-//     index_type_ = JSON_NUMBER_TYPE;
-//     index_ = index;
-
-//     return *this;
-// }
-
-// JsonIndex& 
-// JsonIndex::operator=(const string &key)
-// {
-//     index_type_ = JSON_STRING_TYPE;
-//     key_ = key;
-
-//     return *this;
-// }
-
-// //////////////////////////////////JsonIter////////////////////////////
-// JsonIter::JsonIter(void)
-//     : iter_type_(JSON_NULL_TYPE)
-// {}
-// JsonIter::JsonIter(const ObjIter &obj_iter)
-//     : iter_type_(JSON_OBJECT_TYPE), obj_iter_(obj_iter)
-// {}
-// JsonIter::JsonIter(const ArrIter &arr_iter)
-//     : iter_type_(JSON_ARRAY_TYPE), arr_iter_(arr_iter)
-// {}
-// JsonIter::~JsonIter(void) 
-// {}
-
-// JsonIter::operator ObjIter() const
-// {
-//     if (iter_type_ != JSON_OBJECT_TYPE) {
-//         return obj_iter_; // 未定义行为
-//     }
-
-//     return obj_iter_;
-// }
-
-// JsonIter::operator ConstObjIter() const
-// {
-//     if (iter_type_ != JSON_OBJECT_TYPE) {
-//         return obj_iter_; // 未定义行为
-//     }
-
-//     return obj_iter_;
-// }
-
-// JsonIter::operator ArrIter() const
-// {
-//     if (iter_type_ != JSON_ARRAY_TYPE) {
-//         return arr_iter_; // 未定义行为
-//     }
-
-//     return arr_iter_;
-// }
-
-// JsonIter::operator ConstArrIter() const
-// {
-//     if (iter_type_ != JSON_ARRAY_TYPE) {
-//         return arr_iter_; // 未定义行为
-//     }
-
-//     return arr_iter_;
-// }
-
-// JsonIter& 
-// JsonIter::operator=(const ObjIter &iter)
-// {
-//     iter_type_ = JSON_OBJECT_TYPE;
-//     obj_iter_ = iter;
-
-//     return *this;
-// }
-// JsonIter& 
-// JsonIter::operator=(const ArrIter &iter)
-// {
-//     iter_type_ = JSON_ARRAY_TYPE;
-//     arr_iter_ = iter;
-
-//     return *this;
-// }
-
-// bool 
-// JsonIter::operator==(const JsonIter &lhs)
-// {
-//     if (iter_type_ != JSON_ARRAY_TYPE && iter_type_ != JSON_OBJECT_TYPE) {
-//         return false;
-//     }
-
-//     if (lhs.iter_type_ != JSON_OBJECT_TYPE && lhs.iter_type_ != JSON_ARRAY_TYPE) {
-//         return false;
-//     }
-
-//     if (iter_type_ != lhs.iter_type_) {
-//         return false;
-//     }
-
-//     if (iter_type_ == JSON_ARRAY_TYPE && arr_iter_ == lhs.arr_iter_) {
-//         return true;
-//     }
-
-//     if (iter_type_ == JSON_OBJECT_TYPE && obj_iter_ == lhs.obj_iter_) {
-//         return true;
-//     }
-
-//     return false;
-// }
-
-// bool 
-// JsonIter::operator!=(const JsonIter &lhs)
-// {
-//     return !(*this == lhs);
-// }
-
-// // 前置 ++
-// JsonIter& 
-// JsonIter::operator++(void)
-// {
-//     if (iter_type_ == JSON_OBJECT_TYPE) {
-//         ++obj_iter_;
-//     } else if (iter_type_ == JSON_ARRAY_TYPE) {
-//         ++arr_iter_;
-//     } else {
-//         string err_str = GET_MSG("unknown type: call JsonIter::operator++(void) failed!");
-//         throw runtime_error(err_str);
-//     }
-
-//     return *this;
-// }
-
-// JsonIter 
-// JsonIter::operator++(int)
-// {
-//     JsonIter tmp = *this;
-//     if (iter_type_ == JSON_OBJECT_TYPE) {
-//         ++obj_iter_;
-//     } else if (iter_type_ == JSON_ARRAY_TYPE) {
-//         ++arr_iter_;
-//     } else {
-//         string err_str = GET_MSG("unknown type: call JsonIter::operator++(int) failed!");
-//         throw runtime_error(err_str);
-//     }
-
-//     return tmp;
-// }
-// JsonIter& 
-// JsonIter::operator--(void)
-// {
-//     if (iter_type_ == JSON_OBJECT_TYPE) {
-//         --obj_iter_;
-//     } else if (iter_type_ == JSON_ARRAY_TYPE) {
-//         --arr_iter_;
-//     } else {
-//         string err_str = GET_MSG("unknown type: call JsonIter::operator--(void) failed!");
-//         throw runtime_error(err_str);
-//     }
-
-//     return *this;
-// }
-// JsonIter 
-// JsonIter::operator--(int)
-// {
-//     JsonIter tmp = *this;
-//     if (iter_type_ == JSON_OBJECT_TYPE) {
-//         --obj_iter_;
-//     } else if (iter_type_ == JSON_ARRAY_TYPE) {
-//         --arr_iter_;
-//     } else {
-//         string err_str = GET_MSG("unknown type: call JsonIter::operator--(int) failed!");
-//         throw runtime_error(err_str);
-//     }
-
-//     return tmp;
-// }
-
-// string
-// JsonIter::first()
-// {
-//     if (iter_type_ == JSON_OBJECT_TYPE) {
-//         return obj_iter_->first;
-//     } else if (iter_type_ == JSON_ARRAY_TYPE) {
-//         return "";
-//     } else {
-//         string err_str = GET_MSG("unknown type: call JsonIter::operator*() failed!");
-//         throw runtime_error(err_str);
-//     }
-// }
-// ValueTypeCast& 
-// JsonIter::second()
-// {
-//     if (iter_type_ == JSON_OBJECT_TYPE) {
-//         return obj_iter_->second;
-//     } else if (iter_type_ == JSON_ARRAY_TYPE) {
-//         return *arr_iter_;
-//     } else {
-//         string err_str = GET_MSG("unknown type: call JsonIter::operator*() failed!");
-//         throw runtime_error(err_str);
-//     }
-// }
-
-/////////////////////////////////////////////////////////
 ValueType
 JsonType::check_value_type(ByteBuffer::iterator &iter) 
 {
-    // if (iter == iter.end()){
-    //     return JSON_UNKNOWN_TYPE;
-    // }
     if (isdigit(*iter) || *iter == '-' || *iter == '+') {
         return JSON_NUMBER_TYPE;
     }
@@ -689,7 +434,7 @@ JsonObject::parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &j
             continue;
         }
 
-        ValueTypeCast vtc;
+        JsonValue vtc;
         switch (ret_value_type)
         {
             case JSON_OBJECT_TYPE:
@@ -796,7 +541,7 @@ JsonObject::erase(JsonObject::iterator &remove_iter)
     return value_.erase(remove_iter);
 }
 
-int JsonObject::add(const std::string &key, const ValueTypeCast &value)
+int JsonObject::add(const std::string &key, const JsonValue &value)
 {
     value_[key] = value;
     return 0;
@@ -843,7 +588,7 @@ JsonObject::operator!=(const JsonObject& rhs) const
     return !(*this == rhs);
 }
 
-ValueTypeCast& 
+JsonValue& 
 JsonObject::operator[](const string &key)
 {
     return value_[key];
@@ -868,7 +613,7 @@ JsonArray::parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &js
     ByteBuffer::iterator iter = value_start_pos;
     ++iter;
 
-    ValueTypeCast ret_value;
+    JsonValue ret_value;
     for (; iter != json_end_pos && *iter != ']'; ++iter) {
         ValueType ret_value_type = this->check_value_type(iter);
         if (ret_value_type == JSON_UNKNOWN_TYPE) {
@@ -877,7 +622,7 @@ JsonArray::parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &js
             }
             continue;
         }
-        ValueTypeCast vtc;
+        JsonValue vtc;
         switch (ret_value_type)
         {
             case JSON_OBJECT_TYPE:
@@ -957,7 +702,7 @@ JsonArray::generate(void)
 }
 
 
-int JsonArray::add(const ValueTypeCast &value)
+int JsonArray::add(const JsonValue &value)
 {
     value_.push_back(value);
 
@@ -986,11 +731,11 @@ ostream& operator<<(ostream &os, JsonArray &rhs)
     return os;
 }
 
-ValueTypeCast& 
+JsonValue& 
 JsonArray::operator[](size_t key)
 {
     if (key < 0 || key >= value_.size()) {
-        value_.insert(end(value_), ValueTypeCast());
+        value_.insert(end(value_), JsonValue());
         return value_[value_.size() - 1];
     }
 
@@ -1031,210 +776,210 @@ JsonArray::operator=(JsonArray rhs)
 
 /////////////////////////////////////////////////////////////////
 
-ValueTypeCast::ValueTypeCast(void) 
+JsonValue::JsonValue(void) 
 :type_(JSON_UNKNOWN_TYPE)
-{}
+{
+    value_ = new JsonNull();
+}
 
-ValueTypeCast::ValueTypeCast(const JsonBool &value)
-    : type_(JSON_BOOL_TYPE), bool_(value) {}
+JsonValue::JsonValue(const JsonBool &value)
+    : type_(JSON_BOOL_TYPE)
+{
+    value_ = new JsonBool(value);
+}
     
-ValueTypeCast::ValueTypeCast(const JsonNumber &value)
-    : type_(JSON_NUMBER_TYPE), number_(value) {}
+JsonValue::JsonValue(const JsonNumber &value)
+    : type_(JSON_NUMBER_TYPE)
+{
+    value_ = new JsonNumber(value);
+}
 
-ValueTypeCast::ValueTypeCast(const JsonString &value)
-    : type_(JSON_STRING_TYPE), string_(value) {}
+JsonValue::JsonValue(const JsonString &value)
+    : type_(JSON_STRING_TYPE)
+{
+    value_ = new JsonString(value);
+}
 
-ValueTypeCast::ValueTypeCast(const JsonObject &value)
-    : type_(JSON_OBJECT_TYPE), object_(value) {}
+JsonValue::JsonValue(const JsonObject &value)
+    : type_(JSON_OBJECT_TYPE)
+{
+    JsonObject *object = new JsonObject();
+    object->value_ = value.value_;
+    value_ = object;
+}
 
-ValueTypeCast::ValueTypeCast(const JsonArray &value)
-    : type_(JSON_ARRAY_TYPE), array_(value) {}
+JsonValue::JsonValue(const JsonArray &value)
+    : type_(JSON_ARRAY_TYPE)
+{
+    JsonArray *array = new JsonArray();
+    array->value_ = value.value_;
+    value_ = array;
+}
 
-ValueTypeCast::ValueTypeCast(const JsonNull &value)
-    : type_(JSON_NULL_TYPE), null_(value) {}
+JsonValue::JsonValue(const JsonNull &value)
+    : type_(JSON_NULL_TYPE)
+{
+    value_ = new JsonNull();
+}
 
-ValueTypeCast::ValueTypeCast(const bool &value)
-    :type_(JSON_BOOL_TYPE), bool_(value) {}
+JsonValue::JsonValue(const bool &value)
+    :type_(JSON_BOOL_TYPE)
+{
+    value_ = new JsonBool(value);
+}
 
-ValueTypeCast::ValueTypeCast(const int &value)
-    :type_(JSON_NUMBER_TYPE), number_(value) {}
+JsonValue::JsonValue(const int &value)
+    :type_(JSON_NUMBER_TYPE)
+{
+    value_ = new JsonNumber(value);
+}
 
-ValueTypeCast::ValueTypeCast(const double &value)
-    :type_(JSON_NUMBER_TYPE), number_(value) {}
+JsonValue::JsonValue(const double &value)
+    :type_(JSON_NUMBER_TYPE)
+{
+    value_ = new JsonNumber(value);
+}
 
-ValueTypeCast::ValueTypeCast(const string &value)
-    :type_(JSON_STRING_TYPE), string_(value) {}
+JsonValue::JsonValue(const string &value)
+    :type_(JSON_STRING_TYPE)
+{
+    value_ = new JsonString(value);
+}
 
-ValueTypeCast::ValueTypeCast(const char *value)
-    :type_(JSON_STRING_TYPE), string_(value) {}
+JsonValue::JsonValue(const char *value)
+    :type_(JSON_STRING_TYPE)
+{
+    value_ = new JsonString(value);
+}
 
-ValueTypeCast::ValueTypeCast(const ValueTypeCast &value)
-    : type_(value.type_),
-      array_(value.array_),
-      object_(value.object_),
-      string_(value.string_),
-      number_(value.number_),
-      bool_(value.bool_),
-      json_null_value_(value.json_null_value_)
-{}
+JsonValue::~JsonValue(void) {}
 
-ValueTypeCast::~ValueTypeCast(void) {}
-
-ValueTypeCast::operator JsonBool()
+JsonValue::operator JsonBool()
 {
     if (type_ == JSON_BOOL_TYPE) {
-        return bool_;
+        return *(dynamic_cast<JsonBool*>(value_));
     } else {
         throw runtime_error(GET_MSG("value cast faled: current type is not bool"));
     }
 }
 
-ValueTypeCast::operator JsonNumber()
+JsonValue::operator JsonNumber()
 {
     if (type_ == JSON_NUMBER_TYPE) {
-        return number_;
+        return *(dynamic_cast<JsonNumber*>(value_));
     } else {
         throw runtime_error(GET_MSG("value cast faled: current type is not number"));
     }
 }
-ValueTypeCast::operator JsonString()
+JsonValue::operator JsonString()
 {
     if (type_ == JSON_STRING_TYPE) {
-        return string_;
+        return *(dynamic_cast<JsonString*>(value_));
     } else {
         throw runtime_error(GET_MSG("value cast faled: current type is not string"));
     }
 }
 
-ValueTypeCast::operator JsonObject()
+JsonValue::operator JsonObject()
 {
     if (type_ == JSON_OBJECT_TYPE) {
-        return object_;
+        return *(dynamic_cast<JsonObject*>(value_));
     } else {
         throw runtime_error(GET_MSG("value cast faled: current type is not object"));
     }
 }
-ValueTypeCast::operator JsonArray()
+JsonValue::operator JsonArray()
 {
     if (type_ == JSON_ARRAY_TYPE) {
-        return array_;
+        return *(dynamic_cast<JsonArray*>(value_));
     } else {
         throw runtime_error(GET_MSG("value cast faled: current type is not array"));
     }
 }
 
-ValueTypeCast::operator JsonNull()
+JsonValue::operator JsonNull()
 {
     if (type_ == JSON_NULL_TYPE) {
-        return json_null_value_;
+        return *(dynamic_cast<JsonNull*>(value_));
     } else {
         throw runtime_error(GET_MSG("value cast failed: current type is not null"));
     }
 }
 
-ValueTypeCast& 
-ValueTypeCast::operator=(JsonBool val)
+JsonValue& 
+JsonValue::operator=(const JsonBool &val)
 {
     type_ = JSON_BOOL_TYPE;
-    bool_ = val;
+    value_ = new JsonBool(val.value());
 
     return *this;
 }
 
-ValueTypeCast& 
-ValueTypeCast::operator=(JsonNumber val)
+JsonValue& 
+JsonValue::operator=(const JsonNumber &val)
 {
     type_ = JSON_NUMBER_TYPE;
-    number_ = val;
+    value_ = new JsonNumber(val.value());
 
     return *this;
 }
 
-ValueTypeCast& 
-ValueTypeCast::operator=(JsonString val)
+JsonValue& 
+JsonValue::operator=(const JsonString &val)
 {
     type_ = JSON_STRING_TYPE;
-    string_ = val;
+    value_ = new JsonString(val.value());
 
     return *this;
 }
 
-ValueTypeCast& 
-ValueTypeCast::operator=(JsonObject val)
+JsonValue& 
+JsonValue::operator=(const JsonObject &val)
 {
     type_ = JSON_OBJECT_TYPE;
-    object_ = val;
+    JsonObject *object = new JsonObject();
+    object->value_ = val.value_;
+    value_ = object;
 
     return *this;
 }
 
-ValueTypeCast& 
-ValueTypeCast::operator=(JsonArray val)
+JsonValue& 
+JsonValue::operator=(const JsonArray &val)
 {
     type_ = JSON_ARRAY_TYPE;
-    array_ = val;
+    JsonArray *array = new JsonArray();
+    array->value_ = val.value_;
+    value_ = array;
 
     return *this;
 }
 
-ValueTypeCast& 
-ValueTypeCast::operator=(JsonNull val)
+JsonValue& 
+JsonValue::operator=(const JsonNull &val)
 {
     type_ = JSON_NULL_TYPE;
-    json_null_value_ = val;
+    value_ = new JsonNull();
 
     return *this;
 }
 
-ValueTypeCast& 
-ValueTypeCast::operator=(ValueTypeCast rhs)
-{
-    type_ = rhs.type_;
-    switch (type_)
-    {
-    case JSON_NULL_TYPE:
-        json_null_value_ = rhs.json_null_value_;
-    case JSON_NUMBER_TYPE:
-        number_ = rhs.number_;
-    case JSON_STRING_TYPE:
-        string_ = rhs.string_;
-    case JSON_BOOL_TYPE:
-        bool_ = rhs.bool_;
-    case JSON_ARRAY_TYPE:
-        array_ = rhs.array_;
-    case  JSON_OBJECT_TYPE:
-        object_ = rhs.object_;
-    default:
-        break;
-    }
-
-    return *this;
-
-    return *this;
-}
-
-ostream& operator<<(ostream &os, ValueTypeCast &rhs)
-{
-    os << rhs.format_json();
-    return os;
-}
-
-bool ValueTypeCast::operator==(const ValueTypeCast& rhs) const
+bool JsonValue::operator==(const JsonValue& rhs) const
 {
     switch (type_)
     {
     case JSON_NULL_TYPE:
-        return json_null_value_ == rhs.json_null_value_;
+        return dynamic_cast<JsonNull*>(value_) == dynamic_cast<JsonNull*>(rhs.value_);
     case JSON_NUMBER_TYPE:
-        return number_ == rhs.number_;
+        return dynamic_cast<JsonNumber*>(value_) == dynamic_cast<JsonNumber*>(rhs.value_);
     case JSON_STRING_TYPE:
-        return string_ == rhs.string_;
+        return dynamic_cast<JsonString*>(value_) == dynamic_cast<JsonString*>(rhs.value_);
     case JSON_BOOL_TYPE:
-        return bool_ == rhs.bool_;
+        return dynamic_cast<JsonBool*>(value_) == dynamic_cast<JsonBool*>(rhs.value_);
     case JSON_ARRAY_TYPE:
-        return array_ == rhs.array_;
+        return dynamic_cast<JsonArray*>(value_) == dynamic_cast<JsonArray*>(rhs.value_);
     case  JSON_OBJECT_TYPE:
-        return object_ == rhs.object_;
+        return dynamic_cast<JsonObject*>(value_) == dynamic_cast<JsonObject*>(rhs.value_);
     default:
         break;
     }
@@ -1242,44 +987,152 @@ bool ValueTypeCast::operator==(const ValueTypeCast& rhs) const
     return true;
 }
 bool 
-ValueTypeCast::operator!=(const ValueTypeCast& rhs) const
+JsonValue::operator!=(const JsonValue& rhs) const
 {
     return !(*this == rhs);
 }
 
-ValueTypeCast& 
-ValueTypeCast::operator[](JsonIndex key)
+///////////////////////////////// WeJson //////////////////////////////////////////////////
+WeJson::WeJson(void)
 {
-    if (type_ == JSON_OBJECT_TYPE && 
-            key.get_type() == JSON_STRING_TYPE) {
-        return object_[key];
-    } else if (type_ == JSON_ARRAY_TYPE && 
-            key.get_type() == JSON_NUMBER_TYPE) {
-        return array_[key];
-    } else {
-        throw runtime_error(GET_MSG("Json: Out of range"));
-    }
+
+}
+    
+WeJson::WeJson(const string &json)
+{
+    this->parse(json);
+}
+    
+WeJson::WeJson(ByteBuffer &data)
+{
+    this->parse(data);
 }
 
-ByteBuffer::iterator 
-ValueTypeCast::parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos)
+WeJson::~WeJson(void)
 {
-    VALUE_TYPE ret_type = this->check_value_type(value_start_pos);
+    
+}
+
+void 
+WeJson::create_object(void)
+{
+    if (value_ != nullptr) {
+        delete value_;
+    }
+    type_ = JSON_OBJECT_TYPE;
+    value_ = new JsonObject();
+}
+
+void 
+WeJson::create_array(void)
+{
+    if (value_ != nullptr) {
+        delete value_;
+    }
+    type_ = JSON_ARRAY_TYPE;
+    value_ = new JsonArray();
+}
+
+JsonObject& 
+WeJson::get_object(void)
+{
+    if (type_ != JSON_OBJECT_TYPE) {
+        this->create_object();
+    }
+    return *dynamic_cast<JsonObject*>(value_);
+}
+
+JsonArray& 
+WeJson::get_array(void)
+{
+    if (type_ != JSON_ARRAY_TYPE) {
+        this->create_array();
+    }
+    return *dynamic_cast<JsonArray*>(value_);
+}
+
+int 
+WeJson::parse(ByteBuffer &buff)
+{
+    ByteBuffer simple_json_text;
+    ByteBuffer::iterator start_pos;
+    
+    // 找json文本的开始，如果遇到不是'{'开始的会返回失败
+    for (start_pos = buff.begin(); start_pos != buff.end(); ++start_pos) {
+        ValueType ret = JsonType::check_value_type(start_pos);
+        if (ret == JSON_OBJECT_TYPE || ret == JSON_ARRAY_TYPE) {
+            break;
+        }
+    }
+
+    if (start_pos == buff.end()) {
+        throw runtime_error(GET_MSG("Can't find any json text!"));
+    }
+
+    bool quotation_marks = false;
+    for (auto iter = start_pos; iter != buff.end(); ++iter) {
+        if (quotation_marks == false && *iter == '"') {
+            quotation_marks = true;
+            simple_json_text.write_int8(*iter); // 写入字符串的第一个 "\""
+            continue;
+        }
+
+        if (quotation_marks == true) {
+            if (*iter == '\\'){ 
+                simple_json_text.write_int8(*iter);
+                ++iter; // '\' 为转义字符下一个字符不做解析
+                simple_json_text.write_int8(*iter);
+            } else if (*iter == '"') {
+                quotation_marks = false;
+            }
+        }
+
+        int i = 0;
+        for (i = 0; i < 4; ++i) {
+            if (sperate_chars[i] == *iter) {
+                break;
+            }
+        }
+        // 如果匹配到json的结构字符并且不是在字符串中，那么就忽略
+        if (i < 4 && quotation_marks == false) {
+            continue;
+        }
+
+        // "//" 以这个开头的注释也会被忽略，这个注释可以单独一行或是跟在json那行的末尾，不能出现在json文本那行的前面
+        if (quotation_marks == false && *iter == '/' && *(iter+1) == '/') {
+            for (; iter != buff.end(); ++iter) {
+                if (*iter == '\n') {
+                    break;
+                }
+            }
+
+            if (*iter == '\n') {
+                continue;
+            }
+        }
+
+        simple_json_text.write_int8(*iter);
+    }
+    auto begin_json = simple_json_text.begin();
+    auto end_json = simple_json_text.end();
+
+    parse(begin_json, end_json);
+
+    return 0;
+}
+
+
+ByteBuffer::iterator 
+WeJson::parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos)
+{
+    ValueType ret_type = this->check_value_type(value_start_pos);
     type_ = ret_type;
     switch (ret_type)
     {
-    case JSON_NULL_TYPE:
-        return json_null_value_.parse(value_start_pos, json_end_pos);
-    case JSON_NUMBER_TYPE:
-        return number_.parse(value_start_pos, json_end_pos);
-    case JSON_STRING_TYPE:
-        return string_.parse(value_start_pos, json_end_pos);
-    case JSON_BOOL_TYPE:
-        return bool_.parse(value_start_pos, json_end_pos);
     case JSON_ARRAY_TYPE:
-        return array_.parse(value_start_pos, json_end_pos);
+        return dynamic_cast<JsonArray*>(value_)->parse(value_start_pos, json_end_pos);
     case  JSON_OBJECT_TYPE:
-        return object_.parse(value_start_pos, json_end_pos);
+        return dynamic_cast<JsonObject*>(value_)->parse(value_start_pos, json_end_pos);
     default:
         string err_str = GET_MSG("Unknown json type (object or array)");
         break;
@@ -1288,22 +1141,16 @@ ValueTypeCast::parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator
     return json_end_pos;
 }
 
-string ValueTypeCast::generate(void)
+
+string 
+WeJson::generate(void)
 {
     switch (type_)
     {
-    case JSON_NULL_TYPE:
-        return json_null_value_.generate();
-    case JSON_NUMBER_TYPE:
-        return number_.generate();
-    case JSON_STRING_TYPE:
-        return string_.generate();
-    case JSON_BOOL_TYPE:
-        return bool_.generate();
     case JSON_ARRAY_TYPE:
-        return array_.generate();
+        return dynamic_cast<JsonArray*>(value_)->generate();
     case  JSON_OBJECT_TYPE:
-        return object_.generate();
+        return dynamic_cast<JsonObject*>(value_)->generate();
     default:
         break;
     }
@@ -1311,7 +1158,8 @@ string ValueTypeCast::generate(void)
     return "";
 }
 
-string ValueTypeCast::format_json(void)
+string 
+WeJson::format_json(void)
 {
     if (type_ == JSON_OBJECT_TYPE || type_ == JSON_ARRAY_TYPE){
         string raw_json = this->generate();
@@ -1386,221 +1234,5 @@ string ValueTypeCast::format_json(void)
     }
 }
 
-// 查找元素
-JsonIter 
-ValueTypeCast::find(const string &key)
-{
-    if (type_ == JSON_OBJECT_TYPE) {
-        return object_.find(key);
-    }
-
-    throw runtime_error(GET_MSG("Not support find function!"));
-    return object_.value_.end();
-}
-
-// 操作元素
-int ValueTypeCast::erase(JsonIndex key)
-{
-    if (type_ == JSON_OBJECT_TYPE) {
-        return object_.erase(key);
-    } else if (type_ == JSON_ARRAY_TYPE) {
-        return array_.erase(key);
-    }
-
-    throw runtime_error(GET_MSG("Not support erase function!"));
-    return -1;
-}
-
-// 当前类型为对象时添加元素
-int 
-ValueTypeCast::add(JsonIndex key, ValueTypeCast value)
-{
-    if (type_ == JSON_OBJECT_TYPE) {
-        return object_.add(key, value);
-    } 
-
-    throw runtime_error(GET_MSG("Not support add function!"));
-    return -1;
-}
-
-int 
-ValueTypeCast::add(ValueTypeCast value)
-{
-    if (type_ == JSON_ARRAY_TYPE) {
-        return array_.add(value);
-    }
-
-    throw runtime_error(GET_MSG("Not support add function!"));
-    return -1;
-}
-
-int 
-ValueTypeCast::size(void)
-{
-    if (type_ == JSON_OBJECT_TYPE) {
-        return object_.size();
-    } else if (type_ == JSON_ARRAY_TYPE) {
-        return array_.size();
-    } else if (type_ == JSON_UNKNOWN_TYPE) {
-        return 0;
-    }
-
-    return 1; // 其他的类型下面子元素只有一个
-}
-
-int 
-ValueTypeCast::clear(void)
-{
-    type_ = JSON_UNKNOWN_TYPE;
-    array_.value_.clear();
-    object_.value_.clear();
-
-    return 0;
-}
-
-JsonIter 
-ValueTypeCast::begin(void)
-{
-    if (type_ == JSON_ARRAY_TYPE) {
-        return array_.value_.begin();
-    } else if (type_ == JSON_OBJECT_TYPE) {
-        return object_.value_.begin();
-    } else {
-        string err_str = GET_MSG("unknown type: call itertor end() failed!");
-        throw runtime_error(err_str);
-    }
-
-    return object_.value_.begin();
-}
-
-JsonIter 
-ValueTypeCast::end(void)
-{
-    if (type_ == JSON_ARRAY_TYPE) {
-        return array_.value_.end();
-    } else if (type_ == JSON_OBJECT_TYPE) {
-        return object_.value_.end();
-    } else {
-        string err_str = GET_MSG("unknown type: call itertor end() failed!");
-        throw runtime_error(err_str);
-    }
-
-    return object_.value_.end();
-}
-
-
-///////////////////////////////// WeJson //////////////////////////////////////////////////
-WeJson::WeJson(void)
-{
-
-}
-    
-WeJson::WeJson(const string &json)
-{
-    this->parse(json);
-}
-    
-WeJson::WeJson(ByteBuffer &data)
-{
-    this->parse(data);
-}
-
-WeJson::~WeJson(void)
-{
-    
-}
-
-
-int 
-WeJson::parse(ByteBuffer &buff)
-{
-    ByteBuffer simple_json_text;
-    ByteBuffer::iterator start_pos;
-    
-    // 找json文本的开始，如果遇到不是'{'开始的会返回失败
-    for (start_pos = buff.begin(); start_pos != buff.end(); ++start_pos) {
-        VALUE_TYPE ret = JsonType::check_value_type(start_pos);
-        if (ret == JSON_OBJECT_TYPE || ret == JSON_ARRAY_TYPE) {
-            break;
-        }
-    }
-
-    if (start_pos == buff.end()) {
-        throw runtime_error(GET_MSG("Can't find any json text!"));
-    }
-
-    bool quotation_marks = false;
-    for (auto iter = start_pos; iter != buff.end(); ++iter) {
-        if (quotation_marks == false && *iter == '"') {
-            quotation_marks = true;
-            simple_json_text.write_int8(*iter); // 写入字符串的第一个 "\""
-            continue;
-        }
-
-        if (quotation_marks == true) {
-            if (*iter == '\\'){ 
-                simple_json_text.write_int8(*iter);
-                ++iter; // '\' 为转义字符下一个字符不做解析
-                simple_json_text.write_int8(*iter);
-            } else if (*iter == '"') {
-                quotation_marks = false;
-            }
-        }
-
-        int i = 0;
-        for (i = 0; i < 4; ++i) {
-            if (sperate_chars[i] == *iter) {
-                break;
-            }
-        }
-        // 如果匹配到json的结构字符并且不是在字符串中，那么就忽略
-        if (i < 4 && quotation_marks == false) {
-            continue;
-        }
-
-        // "//" 以这个开头的注释也会被忽略，这个注释可以单独一行或是跟在json那行的末尾，不能出现在json文本那行的前面
-        if (quotation_marks == false && *iter == '/' && *(iter+1) == '/') {
-            for (; iter != buff.end(); ++iter) {
-                if (*iter == '\n') {
-                    break;
-                }
-            }
-
-            if (*iter == '\n') {
-                continue;
-            }
-        }
-
-        simple_json_text.write_int8(*iter);
-    }
-    auto begin_json = simple_json_text.begin();
-    auto end_json = simple_json_text.end();
-
-    ValueTypeCast::parse(begin_json, end_json);
-
-    return 0;
-}
-
-int 
-WeJson::parse(const string &json)
-{
-    ByteBuffer buff;
-    buff.write_string(json);
-    this->parse(buff);
-
-    return 0;
-}
-
-string 
-WeJson::generate(void)
-{
-    return ValueTypeCast::generate();
-}
-
-string 
-WeJson::format_json(void)
-{
-    return ValueTypeCast::format_json();
-}
 
 }
