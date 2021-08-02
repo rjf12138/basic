@@ -42,9 +42,9 @@ bool str_compare(ByteBuffer &buff1, ByteBuffer &buff2)
     string str;
     buff2.read_string(str);
     JsonString js_str_t1(str);
-    bool ret = (str.length() == js_str_t1.generate().length());
+    bool ret = (str.length() == js_str_t1.to_string().length());
     if (ret == true) {
-        ret = (str == js_str_t1.generate());
+        ret = (str == js_str_t1.to_string());
     }
 
     if (ret == false) {
@@ -53,9 +53,9 @@ bool str_compare(ByteBuffer &buff1, ByteBuffer &buff2)
     }
 
     JsonString js_str_t2(str.c_str());
-    ret = (str.length() == js_str_t2.generate().length());
+    ret = (str.length() == js_str_t2.to_string().length());
     if (ret == true) {
-        ret = (str == js_str_t2.generate());
+        ret = (str == js_str_t2.to_string());
     }
     
     if (ret == false) {
@@ -69,9 +69,9 @@ bool str_compare(ByteBuffer &buff1, ByteBuffer &buff2)
     ByteBuffer::iterator bend = buff1.end();
 
     js_str_t3.parse(bbegin, bend);
-    ret = (str.length() == js_str_t3.generate().length());
+    ret = (str.length() == js_str_t3.to_string().length());
     if (ret == true) {
-        ret = (str == js_str_t3.generate());
+        ret = (str == js_str_t3.to_string());
     }
     
     if (ret == false) {
@@ -125,11 +125,11 @@ bool test_parse_number(double val, string str_val)
     auto str_number_end = buff.end();
     json_number.parse(str_number_begin, str_number_end);
 
-    if (stod(json_number.generate().c_str()) == stod(str_val.c_str())) {
+    if (stod(json_number.to_string().c_str()) == stod(str_val.c_str())) {
         return true;
     }
 
-    fprintf(stdout, "double: %lf, str_double: %s, read_double: %s\n", val, str_val.c_str(), json_number.generate().c_str());
+    fprintf(stdout, "double: %lf, str_double: %s, read_double: %s\n", val, str_val.c_str(), json_number.to_string().c_str());
     return false;
 }
 
@@ -140,10 +140,10 @@ TEST_F(WeJson_Test, NUMBER_TEST)
     JsonNumber json_number_test_3(json_number_test_1);
     JsonNumber json_number_test_4(json_number_test_2);
 
-    ASSERT_EQ(json_number_test_1.generate(), "1.1214");
-    ASSERT_EQ(json_number_test_2.generate(), "12");
-    ASSERT_EQ(json_number_test_1.generate(), json_number_test_3.generate());
-    ASSERT_EQ(json_number_test_2.generate(), json_number_test_4.generate());
+    ASSERT_EQ(json_number_test_1.to_string(), "1.1214");
+    ASSERT_EQ(json_number_test_2.to_string(), "12");
+    ASSERT_EQ(json_number_test_1.to_string(), json_number_test_3.to_string());
+    ASSERT_EQ(json_number_test_2.to_string(), json_number_test_4.to_string());
 
     ASSERT_EQ(test_number(-10000.001, "-10000.001"), true);
     ASSERT_EQ(test_number(-10000, "-10000"), true);
@@ -199,15 +199,15 @@ TEST_F(WeJson_Test, BooleanTest)
     ByteBuffer buff1;
     JsonBool jb1(true), jb2(false);
 
-    ASSERT_EQ(jb1.generate(), "true");
-    ASSERT_EQ(jb2.generate(), "false");
+    ASSERT_EQ(jb1.to_string(), "true");
+    ASSERT_EQ(jb2.to_string(), "false");
 
     buff1.write_string("true");
     auto bbegin = buff1.begin();
     auto bend = buff1.end();
 
     jb1.parse(bbegin, bend);
-    ASSERT_EQ(jb1.generate(), "true");
+    ASSERT_EQ(jb1.to_string(), "true");
 
     buff1.clear();
     buff1.write_string("false");
@@ -215,7 +215,7 @@ TEST_F(WeJson_Test, BooleanTest)
     bend = buff1.end();
 
     jb1.parse(bbegin, bend);
-    ASSERT_EQ(jb1.generate(), "false");
+    ASSERT_EQ(jb1.to_string(), "false");
 }
 
 TEST_F(WeJson_Test, NullTest)
@@ -228,7 +228,7 @@ TEST_F(WeJson_Test, NullTest)
     auto bend = buff1.end();
 
     jn1.parse(bbegin, bend);
-    ASSERT_EQ(jn1.generate(), "null");
+    ASSERT_EQ(jn1.to_string(), "null");
 }
 
 TEST_F(WeJson_Test, EmptyObjectArrayTest)
@@ -251,115 +251,104 @@ TEST_F(WeJson_Test, ObjectArrayTest)
     }
 
     WeJson js("{}"), obj("{\"name\":\"Hello, World!\", \"tnull\": null, \"num\": 12.34, \"bool\": true}"), arr("[true, \"Hello\", null, 12.45]");
-    ASSERT_EQ((js.begin() == js.end()), true);
+    ASSERT_EQ((js.get_object().begin() == js.get_object().end()), true);
 
-    js["st,r"] = "te\nst,val   ue";
-    js["bo ol"] = false;
-    js["double"] = 12.3455;
-    js["int"] = 12300;
+    js.get_object()["st,r"] = "te\nst,val   ue";
+    js.get_object()["bo ol"] = false;
+    js.get_object()["double"] = 12.3455;
+    js.get_object()["int"] = 12300;
 
     cout << obj.format_json() <<endl;
 
-    js["null"] = JsonNull();
-    ASSERT_EQ(js["st,r"], "te\nst,val   ue");
+    js.get_object()["null"] = JsonNull();
+    ASSERT_EQ(js.get_object()["st,r"], "te\nst,val   ue");
     
     cout << js.format_json() <<endl;
 
-    arr.add(obj);
-    obj.add("arr", arr);
-    arr.add(obj);
-    obj.add("arr2", arr);
-    js["test-obj"] = obj;
-    js["test-arr"] = arr;
+    arr.get_array().add(obj);
+    obj.get_object().add("arr", arr.get_array());
+    arr.get_array().add(obj);
+    obj.get_object().add("arr2", arr.get_array());
+    js.get_object()["test-obj"] = obj;
+    js.get_object()["test-arr"] = arr;
 
-    ASSERT_EQ(js["test-obj"]["num"], 12.34);
-    ASSERT_EQ(js["test-obj"]["bool"], true);
-    ASSERT_EQ(js["test-obj"]["name"], "Hello, World!");
-    ASSERT_EQ(js["test-obj"]["tnull"], "null");
+    ASSERT_EQ(js.get_object()["test-obj"]["num"], 12.34);
+    ASSERT_EQ(js.get_object()["test-obj"]["bool"], true);
+    ASSERT_EQ(js.get_object()["test-obj"]["name"], "Hello, World!");
+    ASSERT_EQ(js.get_object()["test-obj"]["tnull"], "null");
 
-    ASSERT_EQ(js["test-obj"]["arr"][0], true);
-    ASSERT_EQ(js["test-obj"]["arr"][1], "Hello");
-    ASSERT_EQ(js["test-obj"]["arr"][2], JsonNull());
-    ASSERT_EQ(js["test-obj"]["arr"][3], 12.45);
-    ASSERT_EQ(js["test-obj"]["arr"][4]["name"], "Hello, World!");
+    ASSERT_EQ(js.get_object()["test-obj"]["arr"][0], true);
+    ASSERT_EQ(js.get_object()["test-obj"]["arr"][1], "Hello");
+    ASSERT_EQ(js.get_object()["test-obj"]["arr"][2], JsonNull());
+    ASSERT_EQ(js.get_object()["test-obj"]["arr"][3], 12.45);
+    ASSERT_EQ(js.get_object()["test-obj"]["arr"][4]["name"], "Hello, World!");
 
-    JsonNull jnval = js["test-obj"]["tnull"];
-    ASSERT_EQ(jnval.generate(), "null");
+    JsonNull jnval = js.get_object()["test-obj"]["tnull"];
+    ASSERT_EQ(jnval.to_string(), "null");
 
-    JsonNumber jnumval = js["test-obj"]["num"]; // 不能直接将double类型的json值赋给double
+    JsonNumber jnumval = js.get_object()["test-obj"]["num"]; // 不能直接将double类型的json值赋给double
     ASSERT_EQ(jnumval, 12.34);
     double numval = jnumval;
     ASSERT_EQ(numval, 12.34);
 
-    JsonString jstrval = js["test-obj"]["name"];
+    JsonString jstrval = js.get_object()["test-obj"]["name"];
     ASSERT_EQ(jstrval, "Hello, World!");
     string strval = jstrval;
     ASSERT_EQ(strval, "Hello, World!");
 
-    JsonBool jbval = js["test-obj"]["bool"];
+    JsonBool jbval = js.get_object()["test-obj"]["bool"];
     ASSERT_EQ(jbval, true);
     bool bval = jbval;
     ASSERT_EQ(bval, true);
 
-    WeJson tmp1(js.generate()), tmp2(js.format_json());
-    tmp2["test-obj"]["num"] = 12.34;
+    WeJson tmp1(js.to_string()), tmp2(js.format_json());
+    tmp2.get_object()["test-obj"]["num"] = 12.34;
     ASSERT_EQ(tmp1, tmp2);
-    ASSERT_EQ(tmp1.generate(), tmp2.generate());
-    // cout << js.format_json() << endl << js.generate() << endl;
+    ASSERT_EQ(tmp1.to_string(), tmp2.to_string());
+    // cout << js.format_json() << endl << js.to_string() << endl;
 
     WeJson cpy_js;
     cpy_js = js;
     // cout << cpy_js.format_json() << endl;
     
     ASSERT_EQ(cpy_js, js);
-    cpy_js["test-obj"]["num"] = 12.3;
-    ASSERT_NE(cpy_js["test-obj"]["num"], 12.34);
-    ASSERT_EQ(cpy_js["test-obj"]["num"], 12.3);
+    cpy_js.get_object()["test-obj"]["num"] = 12.3;
+    ASSERT_NE(cpy_js.get_object()["test-obj"]["num"], 12.34);
+    ASSERT_EQ(cpy_js.get_object()["test-obj"]["num"], 12.3);
 
 
     WeJson obj1("{}"), arr1("[]");
 
     // 方式1
-    obj1.add("str", "Hello"); // 对象是键值对
-    obj1.add("int", 123);
-    obj1.add("bool", false);
-    obj1.add("null", JsonNull());
+    obj1.get_object().add("str", "Hello"); // 对象是键值对
+    obj1.get_object().add("int", 123);
+    obj1.get_object().add("bool", false);
+    obj1.get_object().add("null", JsonNull());
 
-    arr1.add("Hello"); // 数组直接添加值
-    arr1.add(123);
-    arr1.add(false);
-    arr1.add(JsonNull());
-
-    // 方式2
-    obj1["str"] = "Hello";
-    obj1["int"] = 123;
-    obj1["bool"] = false;
-    obj1["null"] = JsonNull();
-
-    arr1[0] = "Hel\"lo"; // 数组直接添加值
-    arr1[1] = 123;
-    arr1[2] = false;
-    arr1[3] = JsonNull();
+    arr1.get_array().add("Hello"); // 数组直接添加值
+    arr1.get_array().add(123);
+    arr1.get_array().add(false);
+    arr1.get_array().add(JsonNull());
 
     // 迭代器
     cout << "============== Object ==============" << endl;
-    for (JsonIter iter = obj1.begin(); iter != obj1.end(); ++iter) {
-        cout << iter.second().generate() << endl;
+    for (auto iter = obj1.get_object().begin(); iter != obj1.get_object().end(); ++iter) {
+        cout << iter->second.to_string() << endl;
     }
     cout << "============== Array ==============" << endl;
-    for (JsonIter iter = arr1.begin(); iter != arr1.end(); ++iter) {
-        cout << iter.second().generate() << endl;
+    for (auto iter = arr1.get_array().begin(); iter != arr1.get_array().end(); ++iter) {
+        cout << iter->to_string() << endl;
     }
     cout << "=============== End =================" << endl;
     arr1[4] = obj1;
-    obj1.add("arr", arr1);
-    // obj1.generate();  // 输出后时压缩的
+    obj1.get_object().add("arr", arr1);
+    // obj1.to_string();  // 输出后时压缩的
     // obj1.format_json();// 输出后会格式化
 
     cout << obj1.format_json() << endl;
 
-    obj1.erase("str"); // 对像移除关键字为str的元素
-    arr1.erase(3); // 数组移除下标是 3 的元素
+    obj1.get_object().erase("str"); // 对像移除关键字为str的元素
+    arr1.get_array().erase(3); // 数组移除下标是 3 的元素
     // cout << obj1.format_json() << endl;
     // cout << arr1.format_json() << endl;
 }

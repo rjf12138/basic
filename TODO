@@ -1,2 +1,1 @@
-1. 添加 json 错误类
-2. 修改 wejson_test.cc
+1. 完成jsonvalue operator=

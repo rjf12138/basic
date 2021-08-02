@@ -28,7 +28,7 @@ enum NumberType {
 };
 
 
-class JsonType : public MsgRecord {
+class JsonType {
 public:
     JsonType(void) {}
     virtual ~JsonType(void) {}
@@ -40,7 +40,7 @@ public:
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos){return ByteBuffer::iterator();}
     
     // 将json值反序列化为字符串输出， 没有格式化
-    virtual string generate(void) { return "";}
+    virtual string to_string(void) { return "";}
 };
 
 // json 数值类型
@@ -52,7 +52,7 @@ public:
     ~JsonNumber(void);
 
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos) override;
-    virtual string generate(void) override;
+    virtual string to_string(void) override;
 
     double value(void) const  {return value_;}
     operator double() {return value_;}
@@ -76,7 +76,7 @@ public:
     ~JsonBool(void);
 
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos) override;
-    virtual string generate(void) override;
+    virtual string to_string(void) override;
 
     bool value(void) const  {return value_;}
     operator bool() {return value_;}
@@ -100,7 +100,7 @@ public:
     ~JsonNull(void);
 
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos) override;
-    virtual string generate(void) override;
+    virtual string to_string(void) override;
 
     bool operator==(const JsonNull& rhs) const;
     bool operator!=(const JsonNull& rhs) const;
@@ -120,7 +120,7 @@ public:
     ~JsonString(void);
 
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos) override;
-    virtual string generate(void) override;
+    virtual string to_string(void) override;
 
     string value(void) const  {return value_;}
     operator std::string() {return value_;}
@@ -146,7 +146,7 @@ public:
 
     // 序列化和反序列化
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos) override;
-    virtual std::string generate(void) override;
+    virtual std::string to_string(void) override;
     
     // 查找元素
     JsonObject::iterator find(const string &key);
@@ -166,6 +166,10 @@ public:
     JsonObject& operator=(JsonObject rhs);
     JsonValue& operator[](const string &key);
 
+    // 迭代器
+    iterator begin();
+    iterator end();
+
 public:
     map<string, JsonValue> value_;
 };
@@ -181,7 +185,7 @@ public:
 
     // 序列化和反序列化
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos) override;
-    virtual string generate(void) override;
+    virtual string to_string(void) override;
 
     // 数组或是对象删除元素
     iterator erase(const int &index);
@@ -196,18 +200,19 @@ public:
     // 重载操作符
     JsonValue& operator[](size_t key);
     const JsonValue& operator[](const size_t key) const;
-
     bool operator==(const JsonArray& rhs) const;
     bool operator!=(const JsonArray& rhs) const; 
-
     JsonArray& operator=(JsonArray rhs);
 
+    // 迭代器
+    iterator begin();
+    iterator end();
 public:
     vector<JsonValue> value_;
 };
 
 // json中转类型：可以安装当前存储的类型输出或是接收不同的类型
-class JsonValue : public JsonType {
+class JsonValue {
     friend JsonObject;
     friend JsonArray;
 public:
@@ -234,18 +239,23 @@ public:
     operator JsonArray();
     operator JsonNull();
 
-    JsonValue& operator=(const JsonBool &val);
-    JsonValue& operator=(const JsonNumber &val);
-    JsonValue& operator=(const JsonString &val);
-    JsonValue& operator=(const JsonObject &val);
-    JsonValue& operator=(const JsonArray &val);
-    JsonValue& operator=(const JsonNull &val);
-    JsonValue& operator=(const JsonValue &val);
+    JsonValue& operator=(JsonBool val);
+    JsonValue& operator=(JsonNumber val);
+    JsonValue& operator=(JsonString val);
+    JsonValue& operator=(JsonObject val);
+    JsonValue& operator=(JsonArray val);
+    JsonValue& operator=(JsonNull val);
+    JsonValue& operator=(JsonValue val);
 
     bool operator==(const JsonValue& rhs) const;
     bool operator!=(const JsonValue& rhs) const;
 
+    JsonValue& operator[](const string &key);
+    JsonValue& operator[](const int &key);
+
     ValueType type(void) const {return type_;}
+    string to_string(void);
+
 public:
     ValueType type_;
     JsonType *value_;
@@ -265,7 +275,7 @@ public:
     virtual int parse(const string &data);
 
     // 非格式化输出 json
-    virtual string generate(void);
+    virtual string to_string(void);
     // 格式化输出 json
     virtual string format_json(void);
 
@@ -278,6 +288,8 @@ public:
     JsonObject& get_object(void);
     // 构建成array
     JsonArray& get_array(void);
+
+    ValueType get_type(void) const {return JsonValue::type();}
 
 private:
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos);

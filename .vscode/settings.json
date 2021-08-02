@@ -23,6 +23,22 @@
         "tuple": "cpp",
         "type_traits": "cpp",
         "utility": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "any": "cpp",
+        "bit": "cpp",
+        "cmath": "cpp",
+        "bitset": "cpp",
+        "exception": "cpp",
+        "algorithm": "cpp",
+        "memory": "cpp",
+        "random": "cpp",
+        "fstream": "cpp",
+        "limits": "cpp",
+        "new": "cpp",
+        "numeric": "cpp",
+        "shared_mutex": "cpp",
+        "sstream": "cpp",
+        "streambuf": "cpp",
+        "typeinfo": "cpp"
     }
 }

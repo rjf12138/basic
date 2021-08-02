@@ -17,13 +17,13 @@ target_compile_options(basic_compiler_flags INTERFACE
 		$<${msvc_cxx}:$<BUILD_INTERFACE:-W3>>)
 
 # 设置生成文件输出路径
-set(EXECUTABLE_OUTPUT_PATH, ./output/release/bin)
-add_executable(basic ./main/ByteBuffer_Test.cc)
+set(EXECUTABLE_OUTPUT_PATH, ./output/debug/bin)
+add_executable(basic ./main/WeJson_Test.cc)
 
 target_include_directories(basic PUBLIC ./inc/)
 target_include_directories(basic PRIVATE ./extern_inc/)
 
-target_link_directories(basic PRIVATE ./lib/release/)
+target_link_directories(basic PRIVATE ./lib/debug/)
 
 target_link_libraries(basic PRIVATE gtest)
 target_link_libraries(basic PRIVATE pthread)
