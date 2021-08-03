@@ -54,7 +54,8 @@ public:
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos) override;
     virtual string to_string(void) override;
 
-    double value(void) const  {return value_;}
+    double to_double(void) const  {return value_;}
+    int to_int(void) const {return static_cast<int>(value_);}
     operator double() {return value_;}
 
     bool operator==(const JsonNumber& rhs) const;
@@ -76,9 +77,9 @@ public:
     ~JsonBool(void);
 
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos) override;
-    virtual string to_string(void) override;
+    virtual string to_string(void) const;
 
-    bool value(void) const  {return value_;}
+    bool to_bool(void) const  {return value_;}
     operator bool() {return value_;}
 
     bool operator==(const JsonBool& rhs) const;
@@ -100,7 +101,7 @@ public:
     ~JsonNull(void);
 
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos) override;
-    virtual string to_string(void) override;
+    virtual string to_string(void) const;
 
     bool operator==(const JsonNull& rhs) const;
     bool operator!=(const JsonNull& rhs) const;
@@ -120,9 +121,8 @@ public:
     ~JsonString(void);
 
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos) override;
-    virtual string to_string(void) override;
+    virtual string to_string(void) const;
 
-    string value(void) const  {return value_;}
     operator std::string() {return value_;}
 
     bool operator==(const JsonString& rhs) const;
@@ -135,9 +135,10 @@ private:
     string value_;
 };
 
-// json 对象类型
+class JsonValue;
 class JsonObject : public JsonType {
 public:
+    friend class JsonValue;
     friend ostream& operator<<(ostream &os, JsonObject &rhs);
     typedef std::map<string, JsonValue>::iterator iterator;
 public:
@@ -163,20 +164,21 @@ public:
     // 重载操作符
     bool operator==(const JsonObject& rhs) const;
     bool operator!=(const JsonObject& rhs) const;
-    JsonObject& operator=(JsonObject rhs);
+    JsonObject& operator=(const JsonObject &rhs);
     JsonValue& operator[](const string &key);
 
     // 迭代器
     iterator begin();
     iterator end();
 
-public:
+private:
     map<string, JsonValue> value_;
 };
 
 // json 数组类型
 class JsonArray : public JsonType {
 public:
+    friend class JsonValue;
     friend ostream& operator<<(ostream &os, JsonArray &rhs);
     typedef std::vector<JsonValue>::iterator iterator;
 public:
@@ -202,19 +204,17 @@ public:
     const JsonValue& operator[](const size_t key) const;
     bool operator==(const JsonArray& rhs) const;
     bool operator!=(const JsonArray& rhs) const; 
-    JsonArray& operator=(JsonArray rhs);
+    JsonArray& operator=(const JsonArray &rhs);
 
     // 迭代器
     iterator begin();
     iterator end();
-public:
+private:
     vector<JsonValue> value_;
 };
 
 // json中转类型：可以安装当前存储的类型输出或是接收不同的类型
 class JsonValue {
-    friend JsonObject;
-    friend JsonArray;
 public:
     JsonValue(void);
     JsonValue(const JsonBool &value);
@@ -239,13 +239,13 @@ public:
     operator JsonArray();
     operator JsonNull();
 
-    JsonValue& operator=(JsonBool val);
-    JsonValue& operator=(JsonNumber val);
-    JsonValue& operator=(JsonString val);
-    JsonValue& operator=(JsonObject val);
-    JsonValue& operator=(JsonArray val);
-    JsonValue& operator=(JsonNull val);
-    JsonValue& operator=(JsonValue val);
+    JsonValue& operator=(const JsonBool &val);
+    JsonValue& operator=(const JsonNumber &val);
+    JsonValue& operator=(const JsonString &val);
+    JsonValue& operator=(const JsonObject &val);
+    JsonValue& operator=(const JsonArray &val);
+    JsonValue& operator=(const JsonNull &val);
+    JsonValue& operator=(const JsonValue &val);
 
     bool operator==(const JsonValue& rhs) const;
     bool operator!=(const JsonValue& rhs) const;

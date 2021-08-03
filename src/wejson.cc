@@ -205,7 +205,7 @@ JsonBool::parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &jso
 }
 
 string 
-JsonBool::to_string(void)
+JsonBool::to_string(void) const
 {
     return value_ == true? "true":"false";
 }
@@ -286,7 +286,7 @@ JsonNull::parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &jso
 }
 
 string 
-JsonNull::to_string(void)
+JsonNull::to_string(void) const
 {
     return "null";
 }
@@ -356,7 +356,7 @@ JsonString::parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &j
 }
 
 string 
-JsonString::to_string(void)
+JsonString::to_string(void) const
 {
     return value_;
 }
@@ -609,7 +609,7 @@ JsonObject::operator[](const string &key)
 }
 
 JsonObject& 
-JsonObject::operator=(JsonObject rhs)
+JsonObject::operator=(const JsonObject &rhs)
 {
     value_ = rhs.value_;
 
@@ -803,7 +803,7 @@ bool JsonArray::operator!=(const JsonArray& rhs) const
 }
 
 JsonArray& 
-JsonArray::operator=(JsonArray rhs)
+JsonArray::operator=(const JsonArray &rhs)
 {
     value_ = rhs.value_;
 
@@ -825,7 +825,7 @@ JsonArray::end()
 /////////////////////////////////////////////////////////////////
 
 JsonValue::JsonValue(void) 
-:type_(JSON_UNKNOWN_TYPE)
+:type_(JSON_NULL_TYPE)
 {
     value_ = new JsonNull();
 }
@@ -852,7 +852,7 @@ JsonValue::JsonValue(const JsonObject &value)
     : type_(JSON_OBJECT_TYPE)
 {
     JsonObject *object = new JsonObject();
-    object->value_ = value.value_;
+    *object = value;
     value_ = object;
 }
 
@@ -860,7 +860,7 @@ JsonValue::JsonValue(const JsonArray &value)
     : type_(JSON_ARRAY_TYPE)
 {
     JsonArray *array = new JsonArray();
-    array->value_ = value.value_;
+    *array = value;
     value_ = array;
 }
 
@@ -902,8 +902,10 @@ JsonValue::JsonValue(const char *value)
 
 JsonValue::~JsonValue(void) 
 {
+    LOG_GLOBAL_INFO("%ld", (unsigned long int)value_);
     if (value_ != nullptr) {
         delete value_;
+        value_ = nullptr;
     }
 }
 
@@ -960,36 +962,40 @@ JsonValue::operator JsonNull()
 }
 
 JsonValue& 
-JsonValue::operator=(JsonBool val)
+JsonValue::operator=(const JsonBool &val)
 {
     type_ = JSON_BOOL_TYPE;
-    value_ = new JsonBool(val.value());
+    delete value_;
+    value_ = new JsonBool(val.to_bool());
 
     return *this;
 }
 
 JsonValue& 
-JsonValue::operator=(JsonNumber val)
+JsonValue::operator=(const JsonNumber &val)
 {
     type_ = JSON_NUMBER_TYPE;
-    value_ = new JsonNumber(val.value());
+    delete value_;
+    value_ = new JsonNumber(val.to_double());
 
     return *this;
 }
 
 JsonValue& 
-JsonValue::operator=(JsonString val)
+JsonValue::operator=(const JsonString &val)
 {
     type_ = JSON_STRING_TYPE;
-    value_ = new JsonString(val.value());
+    delete value_;
+    value_ = new JsonString(val.to_string());
 
     return *this;
 }
 
 JsonValue& 
-JsonValue::operator=(JsonObject val)
+JsonValue::operator=(const JsonObject &val)
 {
     type_ = JSON_OBJECT_TYPE;
+    delete value_;
     JsonObject *object = new JsonObject();
     object->value_ = val.value_;
     value_ = object;
@@ -998,9 +1004,10 @@ JsonValue::operator=(JsonObject val)
 }
 
 JsonValue& 
-JsonValue::operator=(JsonArray val)
+JsonValue::operator=(const JsonArray &val)
 {
     type_ = JSON_ARRAY_TYPE;
+    delete value_;
     JsonArray *array = new JsonArray();
     array->value_ = val.value_;
     value_ = array;
@@ -1009,17 +1016,19 @@ JsonValue::operator=(JsonArray val)
 }
 
 JsonValue& 
-JsonValue::operator=(JsonNull val)
+JsonValue::operator=(const JsonNull &val)
 {
     type_ = JSON_NULL_TYPE;
+    delete value_;
     value_ = new JsonNull();
 
     return *this;
 }
 
 JsonValue& 
-JsonValue::operator=(JsonValue val)
+JsonValue::operator=(const JsonValue &val)
 {
+    delete value_;
     type_ = val.type_;
     switch (type_)
     {
@@ -1027,25 +1036,25 @@ JsonValue::operator=(JsonValue val)
         value_ = new JsonNull();
     } break;
     case JSON_NUMBER_TYPE:{
-        JsonNumber *value = new JsonNumber(dynamic_cast<JsonNumber*>(val.value_)->value());
+        JsonNumber *value = new JsonNumber(dynamic_cast<JsonNumber*>(val.value_)->to_double());
         value_ = value;
     } break;
     case JSON_STRING_TYPE:{
-        JsonString *value = new JsonString(dynamic_cast<JsonString*>(val.value_)->value());
+        JsonString *value = new JsonString(dynamic_cast<JsonString*>(val.value_)->to_string());
         value_ = value;
     } break;
     case JSON_BOOL_TYPE:{
-        JsonBool *value = new JsonBool(dynamic_cast<JsonBool*>(val.value_)->value());
+        JsonBool *value = new JsonBool(dynamic_cast<JsonBool*>(val.value_)->to_bool());
         value_ = value;
     } break;
     case JSON_ARRAY_TYPE:{
         JsonArray *value = new JsonArray();
-        value->value_ = dynamic_cast<JsonArray*>(val.value_)->value_;
+        *value = *dynamic_cast<JsonArray*>(val.value_);
         value_ = value;
     } break;
     case  JSON_OBJECT_TYPE:{
         JsonObject *value = new JsonObject();
-        value->value_ = dynamic_cast<JsonObject*>(val.value_)->value_;
+        *value = *dynamic_cast<JsonObject*>(val.value_);
         value_ = value;
     } break;
     default:
@@ -1199,7 +1208,7 @@ WeJson::parse(const ByteBuffer &buff)
     ByteBuffer simple_json_text;
     ByteBuffer::iterator start_pos;
     
-    // 找json文本的开始，如果没有遇到'{'开始的会返回失败
+    // 找json文本的开始，如果没有遇到'{'或'['开始的会返回失败
     for (start_pos = buff.begin(); start_pos != buff.end(); ++start_pos) {
         ValueType ret = JsonType::check_value_type(start_pos);
         if (ret == JSON_OBJECT_TYPE || ret == JSON_ARRAY_TYPE) {
