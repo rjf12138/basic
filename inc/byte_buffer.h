@@ -11,11 +11,12 @@ namespace basic {
 typedef char bufftype;
 typedef char* buffptr;
 
-class bytebuffer_iterator;
+class ByteBufferIterator;
 class ByteBuffer {
-    friend class bytebuffer_iterator;
+    friend class ByteBufferIterator;
 public:
-    typedef bytebuffer_iterator iterator;
+    typedef ByteBufferIterator iterator;
+    typedef const ByteBufferIterator const_iterator;
 public:
     ByteBuffer(ssize_t size = 0);
     ByteBuffer(const ByteBuffer &buff);
@@ -73,16 +74,16 @@ public:
     iterator last_data(void);
     
     // 返回const 起始结束迭代器
-    iterator cbegin(void) const;
-    iterator cend(void) const;
-    iterator clast_data(void) const;
+    const_iterator begin(void) const;
+    const_iterator end(void) const;
+    const_iterator last_data(void) const;
 
     // 获取 ByteBuffer 迭代器指定范围的数据
-    ssize_t get_data(ByteBuffer &out, bytebuffer_iterator &copy_start, ssize_t copy_size);
+    ssize_t get_data(ByteBuffer &out, ByteBufferIterator &copy_start, ssize_t copy_size);
     //////////////////////////////////////////////////
 
     // 判断 patten 是不是 bytebuffer 从 iter 开始的子串, size: -1 表示匹配全部, 否则指定具体大小
-    bool bytecmp(bytebuffer_iterator &iter, ByteBuffer &patten, ssize_t size = -1);
+    bool bytecmp(ByteBufferIterator &iter, ByteBuffer &patten, ssize_t size = -1);
 
     // 向外面直接提供 buffer_ 指针，它们写是直接写入指针，避免不必要的拷贝
     buffptr get_write_buffer_ptr(void) const;
@@ -98,7 +99,7 @@ public:
 
     // ===================== 操作ByteBuffer ======================
     // 返回 ByteBuffer 中所有匹配 buff 的迭代器
-    std::vector<bytebuffer_iterator> find(ByteBuffer buff);
+    std::vector<ByteBufferIterator> find(ByteBuffer buff);
     
     // 根据 buff 分割 ByteBuffer
     vector<ByteBuffer> split(ByteBuffer buff);
@@ -111,8 +112,8 @@ public:
     ByteBuffer remove(ByteBuffer buff, ssize_t index = -1);
 
     // 在 ByteBuff 指定迭代器前/后插入子串 buff
-    ssize_t insert_front(bytebuffer_iterator &insert_iter, ByteBuffer buff);
-    ssize_t insert_back(bytebuffer_iterator &insert_iter, ByteBuffer buff);
+    ssize_t insert_front(ByteBufferIterator &insert_iter, ByteBuffer buff);
+    ssize_t insert_back(ByteBufferIterator &insert_iter, ByteBuffer buff);
 
     // 返回符合模式 regex 的子串(使用正则表达式)
     vector<ByteBuffer> match(ByteBuffer regex);
@@ -142,43 +143,43 @@ private:
 };
 
 // 迭代器
-class bytebuffer_iterator
+class ByteBufferIterator
 {
     friend class ByteBuffer;
 public:
-    bytebuffer_iterator(void);
-    bytebuffer_iterator(const bytebuffer_iterator &rhs);
-    ~bytebuffer_iterator(void);
+    ByteBufferIterator(void);
+    ByteBufferIterator(const ByteBufferIterator &rhs);
+    ~ByteBufferIterator(void);
 
     bufftype operator*();
-    bytebuffer_iterator operator+(ssize_t inc);
-    bytebuffer_iterator operator-(int des);
+    ByteBufferIterator operator+(ssize_t inc);
+    ByteBufferIterator operator-(int des);
     // 求出两个迭代器之间的距离绝对值
-    ssize_t operator-(bytebuffer_iterator &rhs);
+    ssize_t operator-(ByteBufferIterator &rhs);
     // 前置++
-    bytebuffer_iterator& operator++();
+    ByteBufferIterator& operator++();
     // 后置++
-    bytebuffer_iterator operator++(int);
+    ByteBufferIterator operator++(int);
     // 前置--
-    bytebuffer_iterator& operator--();
+    ByteBufferIterator& operator--();
     // 后置--
-    bytebuffer_iterator operator--(int);
+    ByteBufferIterator operator--(int);
     // +=
-    bytebuffer_iterator& operator+=(ssize_t inc);
-    bytebuffer_iterator& operator-=(ssize_t des);
+    ByteBufferIterator& operator+=(ssize_t inc);
+    ByteBufferIterator& operator-=(ssize_t des);
 
     // 只支持 == ,!= , = 其他的比较都不支持
-    bool operator==(const bytebuffer_iterator& iter) const;
-    bool operator!=(const bytebuffer_iterator& iter) const;
-    bool operator>(const bytebuffer_iterator& iter) const;
-    bool operator>=(const bytebuffer_iterator& iter) const;
-    bool operator<(const bytebuffer_iterator& iter) const;
-    bool operator<=(const bytebuffer_iterator& iter) const;
-    bytebuffer_iterator& operator=(const bytebuffer_iterator& src);
+    bool operator==(const ByteBufferIterator& iter) const;
+    bool operator!=(const ByteBufferIterator& iter) const;
+    bool operator>(const ByteBufferIterator& iter) const;
+    bool operator>=(const ByteBufferIterator& iter) const;
+    bool operator<(const ByteBufferIterator& iter) const;
+    bool operator<=(const ByteBufferIterator& iter) const;
+    ByteBufferIterator& operator=(const ByteBufferIterator& src);
 
     string debug_info(void);
 private:
-    bytebuffer_iterator(const ByteBuffer *buffer, const ssize_t &pos);
+    ByteBufferIterator(const ByteBuffer *buffer, const ssize_t &pos);
     bool check_iterator(void);
     bool move_postion(ssize_t distance, ssize_t &new_postion);
 

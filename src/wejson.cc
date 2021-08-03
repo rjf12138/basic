@@ -900,7 +900,12 @@ JsonValue::JsonValue(const char *value)
     value_ = new JsonString(value);
 }
 
-JsonValue::~JsonValue(void) {}
+JsonValue::~JsonValue(void) 
+{
+    if (value_ != nullptr) {
+        delete value_;
+    }
+}
 
 JsonValue::operator JsonBool()
 {
@@ -1022,19 +1027,26 @@ JsonValue::operator=(JsonValue val)
         value_ = new JsonNull();
     } break;
     case JSON_NUMBER_TYPE:{
-        JsonNumber *value = new JsonNumber(dynamic_cast<val.>.value());
+        JsonNumber *value = new JsonNumber(dynamic_cast<JsonNumber*>(val.value_)->value());
+        value_ = value;
     } break;
     case JSON_STRING_TYPE:{
-        value_ = new JsonString();
+        JsonString *value = new JsonString(dynamic_cast<JsonString*>(val.value_)->value());
+        value_ = value;
     } break;
     case JSON_BOOL_TYPE:{
-        value_ = new JsonBool();
+        JsonBool *value = new JsonBool(dynamic_cast<JsonBool*>(val.value_)->value());
+        value_ = value;
     } break;
     case JSON_ARRAY_TYPE:{
-        value_ = new JsonArray();
+        JsonArray *value = new JsonArray();
+        value->value_ = dynamic_cast<JsonArray*>(val.value_)->value_;
+        value_ = value;
     } break;
     case  JSON_OBJECT_TYPE:{
-        value_ = new JsonObject();
+        JsonObject *value = new JsonObject();
+        value->value_ = dynamic_cast<JsonObject*>(val.value_)->value_;
+        value_ = value;
     } break;
     default:
         break;
@@ -1128,14 +1140,13 @@ WeJson::WeJson(const string &json)
     this->parse(json);
 }
     
-WeJson::WeJson(ByteBuffer &data)
+WeJson::WeJson(const ByteBuffer &data)
 {
     this->parse(data);
 }
 
 WeJson::~WeJson(void)
 {
-    
 }
 
 void 
@@ -1177,12 +1188,18 @@ WeJson::get_array(void)
 }
 
 int 
-WeJson::parse(ByteBuffer &buff)
+WeJson::parse(const string &data)
+{
+    return this->parse(ByteBuffer(data));
+}
+
+int 
+WeJson::parse(const ByteBuffer &buff)
 {
     ByteBuffer simple_json_text;
     ByteBuffer::iterator start_pos;
     
-    // 找json文本的开始，如果遇到不是'{'开始的会返回失败
+    // 找json文本的开始，如果没有遇到'{'开始的会返回失败
     for (start_pos = buff.begin(); start_pos != buff.end(); ++start_pos) {
         ValueType ret = JsonType::check_value_type(start_pos);
         if (ret == JSON_OBJECT_TYPE || ret == JSON_ARRAY_TYPE) {
@@ -1254,10 +1271,14 @@ WeJson::parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_
     type_ = ret_type;
     switch (ret_type)
     {
-    case JSON_ARRAY_TYPE:
+    case JSON_ARRAY_TYPE: {
+        this->create_array();
         return dynamic_cast<JsonArray*>(value_)->parse(value_start_pos, json_end_pos);
-    case  JSON_OBJECT_TYPE:
+    }
+    case  JSON_OBJECT_TYPE: {
+        this->create_object();
         return dynamic_cast<JsonObject*>(value_)->parse(value_start_pos, json_end_pos);
+    }
     default:
         string err_str = GLOBAL_GET_MSG("Unknown json type (object or array)");
         break;

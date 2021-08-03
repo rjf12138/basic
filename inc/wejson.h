@@ -265,12 +265,12 @@ class WeJson : public JsonValue
 {
 public:
     WeJson(void);
-    WeJson(const string &json);
-    WeJson(ByteBuffer &data);
+    WeJson(const std::string &json);
+    WeJson(const ByteBuffer &data);
     virtual ~WeJson(void);
 
     // 解析保存在ByteBuffer的数据
-    virtual int parse(ByteBuffer &data);
+    virtual int parse(const ByteBuffer &data);
     // 解析保存在string中的数据
     virtual int parse(const string &data);
 

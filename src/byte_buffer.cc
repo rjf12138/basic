@@ -185,7 +185,7 @@ ByteBuffer::end(void)
 ByteBuffer::iterator
 ByteBuffer::last_data(void)
 {
-    bytebuffer_iterator tmp(this, start_read_pos_);
+    ByteBufferIterator tmp(this, start_read_pos_);
     if (this->data_size() <= 0) {
         return this->end();
     }
@@ -193,24 +193,24 @@ ByteBuffer::last_data(void)
     return (tmp + (this->data_size() - 1));
 }
 
-ByteBuffer::iterator
-ByteBuffer::cbegin(void) const
+ByteBuffer::const_iterator
+ByteBuffer::begin(void) const
 {
     return iterator(this, start_read_pos_);
 }
 
-ByteBuffer::iterator
-ByteBuffer::cend(void) const
+ByteBuffer::const_iterator
+ByteBuffer::end(void) const
 {
     return iterator(this, start_write_pos_);
 }
 
-ByteBuffer::iterator
-ByteBuffer::clast_data(void) const
+ByteBuffer::const_iterator
+ByteBuffer::last_data(void) const
 {
     iterator tmp(this, start_read_pos_);
     if (this->data_size() <= 0) {
-        return this->cend();
+        return this->end();
     }
 
     return (tmp + (this->data_size() - 1));
@@ -458,7 +458,7 @@ int ByteBuffer::write_int32_hton(const int32_t &val)
 }
 
 ssize_t
-ByteBuffer::get_data(ByteBuffer &out, bytebuffer_iterator &copy_start, ssize_t copy_size)
+ByteBuffer::get_data(ByteBuffer &out, ByteBufferIterator &copy_start, ssize_t copy_size)
 {
     out.clear();
     if (this->buffer_ == nullptr || copy_size <= 0) {
@@ -470,7 +470,7 @@ ByteBuffer::get_data(ByteBuffer &out, bytebuffer_iterator &copy_start, ssize_t c
     }
 
     ssize_t i = 0;
-    bytebuffer_iterator tmp = copy_start;
+    ByteBufferIterator tmp = copy_start;
     for (; i < copy_size && tmp != this->end(); ++i) {
         out.write_int8(*tmp);
         ++tmp;
@@ -522,15 +522,15 @@ ByteBuffer::operator==(const ByteBuffer &rhs) const
         return false;
     }
 
-    auto lhs_iter = this->cbegin();
-    auto rhs_iter = rhs.cbegin();
+    auto lhs_iter = this->begin();
+    auto rhs_iter = rhs.begin();
 
     while (true) {
-        if (lhs_iter == this->cend() && rhs_iter == rhs.cend()) {
+        if (lhs_iter == this->end() && rhs_iter == rhs.end()) {
             return true;
-        } else if (lhs_iter != this->cend() && rhs_iter == rhs.cend()) {
+        } else if (lhs_iter != this->end() && rhs_iter == rhs.end()) {
             return false;
-        } else if (lhs_iter == this->cend() && rhs_iter != rhs.cend()) {
+        } else if (lhs_iter == this->end() && rhs_iter != rhs.end()) {
             return false;
         }
 
@@ -590,7 +590,7 @@ ByteBuffer::operator[](ssize_t index)
 }
 
 bool 
-ByteBuffer::bytecmp(bytebuffer_iterator &iter, ByteBuffer &patten, ssize_t size)
+ByteBuffer::bytecmp(ByteBufferIterator &iter, ByteBuffer &patten, ssize_t size)
 {
     if (iter.buff_->buffer_ != this->buffer_ || iter == this->end())
     {
@@ -689,10 +689,10 @@ ByteBuffer::update_read_pos(ssize_t offset)
 }
 
 ///////////////////////////// 操作 ByteBuffer /////////////////////////////
-std::vector<bytebuffer_iterator>
+std::vector<ByteBufferIterator>
 ByteBuffer::find(ByteBuffer patten)
 {
-    std::vector<bytebuffer_iterator> result;
+    std::vector<ByteBufferIterator> result;
     if (patten.data_size() == 0 || this->data_size() == 0) {
         return result;
     }
@@ -729,11 +729,11 @@ ByteBuffer::split(ByteBuffer buff)
         return result;
     }
 
-    std::vector<bytebuffer_iterator> find_buff = this->find(buff);
+    std::vector<ByteBufferIterator> find_buff = this->find(buff);
 
     ByteBuffer tmp;
     ssize_t copy_size;
-    bytebuffer_iterator start_copy_pos = this->begin();
+    ByteBufferIterator start_copy_pos = this->begin();
     for (std::size_t i = 0; i < find_buff.size(); ++i) {
         copy_size = find_buff[i] - start_copy_pos;
 
@@ -768,8 +768,8 @@ ByteBuffer::replace(ByteBuffer buf1, ByteBuffer buf2, ssize_t index)
 
     ssize_t copy_size = 0;
     ByteBuffer result, tmp;
-    bytebuffer_iterator copy_pos_iter = this->begin();
-    std::vector<bytebuffer_iterator> find_buff = this->find(buf1);
+    ByteBufferIterator copy_pos_iter = this->begin();
+    std::vector<ByteBufferIterator> find_buff = this->find(buf1);
     if (find_buff.size() == 0) {
         return *this;
     }
@@ -812,7 +812,7 @@ ByteBuffer::remove(ByteBuffer buff, ssize_t index)
     }
     
     ByteBuffer tmp_buf;
-    std::vector<bytebuffer_iterator> find_buff = this->find(buff);
+    std::vector<ByteBufferIterator> find_buff = this->find(buff);
     if (index < 0 || index >= (ssize_t)find_buff.size()) {
         index = -1;
     }
@@ -823,7 +823,7 @@ ByteBuffer::remove(ByteBuffer buff, ssize_t index)
             tmp_buf = tmp_buf + ret[i];
         }
     } else {
-        bytebuffer_iterator begin_iter = this->begin();
+        ByteBufferIterator begin_iter = this->begin();
         ssize_t copy_size = find_buff[index] - begin_iter;
 
         ByteBuffer out;
@@ -842,7 +842,7 @@ ByteBuffer::remove(ByteBuffer buff, ssize_t index)
 }
 
 ssize_t 
-ByteBuffer::insert_front(bytebuffer_iterator &insert_iter, ByteBuffer buff)
+ByteBuffer::insert_front(ByteBufferIterator &insert_iter, ByteBuffer buff)
 {
     ByteBuffer tmp_buf, result;
     if (!(insert_iter >= this->begin() && 
@@ -850,7 +850,7 @@ ByteBuffer::insert_front(bytebuffer_iterator &insert_iter, ByteBuffer buff)
         return -1;
     }
 
-    bytebuffer_iterator begin_iter = this->begin();
+    ByteBufferIterator begin_iter = this->begin();
     ssize_t copy_front_size = insert_iter - begin_iter;
     this->get_data(result, begin_iter, copy_front_size);
     
@@ -865,7 +865,7 @@ ByteBuffer::insert_front(bytebuffer_iterator &insert_iter, ByteBuffer buff)
 }
 
 ssize_t 
-ByteBuffer::insert_back(bytebuffer_iterator &insert_iter, ByteBuffer buff)
+ByteBuffer::insert_back(ByteBufferIterator &insert_iter, ByteBuffer buff)
 {
     ByteBuffer tmp_buf, result;
     if (!(insert_iter >= this->begin() && 
@@ -873,7 +873,7 @@ ByteBuffer::insert_back(bytebuffer_iterator &insert_iter, ByteBuffer buff)
         return -1;
     }
 
-    bytebuffer_iterator begin_iter = this->begin();
+    ByteBufferIterator begin_iter = this->begin();
     ssize_t copy_front_size = insert_iter - begin_iter + 1;
     this->get_data(result, begin_iter, copy_front_size);
     
@@ -909,23 +909,23 @@ ByteBuffer::match(ByteBuffer regex_str)
 }
 
 //////////////////////迭代器////////////////////////////////
-bytebuffer_iterator::bytebuffer_iterator(void)
+ByteBufferIterator::ByteBufferIterator(void)
     : buff_(nullptr), curr_pos_(0) 
 {}
 
-bytebuffer_iterator::bytebuffer_iterator(const bytebuffer_iterator &iter)
+ByteBufferIterator::ByteBufferIterator(const ByteBufferIterator &iter)
     : buff_(iter.buff_), curr_pos_(iter.curr_pos_)
 {}
 
-bytebuffer_iterator::bytebuffer_iterator(const ByteBuffer *buffer, const ssize_t &pos)
+ByteBufferIterator::ByteBufferIterator(const ByteBuffer *buffer, const ssize_t &pos)
         : buff_(buffer), curr_pos_(pos)
 {}
 
-bytebuffer_iterator::~bytebuffer_iterator(void)
+ByteBufferIterator::~ByteBufferIterator(void)
 {}
 
 bufftype 
-bytebuffer_iterator::operator*()
+ByteBufferIterator::operator*()
 {
     if (this->check_iterator() == false) {
         throw runtime_error(GLOBAL_GET_MSG("Msg: out of range. Info:\n%s", this->debug_info().c_str()));
@@ -933,26 +933,26 @@ bytebuffer_iterator::operator*()
     return buff_->buffer_[curr_pos_];
 }
 
-bytebuffer_iterator 
-bytebuffer_iterator::operator+(ssize_t inc)
+ByteBufferIterator 
+ByteBufferIterator::operator+(ssize_t inc)
 {
-    bytebuffer_iterator tmp_iter = *this;
+    ByteBufferIterator tmp_iter = *this;
     this->move_postion(inc, tmp_iter.curr_pos_);
 
     return tmp_iter;
 }
 
-bytebuffer_iterator 
-bytebuffer_iterator::operator-(int des) 
+ByteBufferIterator 
+ByteBufferIterator::operator-(int des) 
 {
-    bytebuffer_iterator tmp_iter = *this;
+    ByteBufferIterator tmp_iter = *this;
     this->move_postion(-1 * des, tmp_iter.curr_pos_);
 
     return tmp_iter;
 }
 
 ssize_t 
-bytebuffer_iterator::operator-(bytebuffer_iterator &rhs)
+ByteBufferIterator::operator-(ByteBufferIterator &rhs)
 {
     if (this->buff_->buffer_ != rhs.buff_->buffer_) {
         return 0;
@@ -974,8 +974,8 @@ bytebuffer_iterator::operator-(bytebuffer_iterator &rhs)
 }
 
 // 前置++
-bytebuffer_iterator& 
-bytebuffer_iterator::operator++()
+ByteBufferIterator& 
+ByteBufferIterator::operator++()
 {
     this->move_postion(1, this->curr_pos_);
 
@@ -983,18 +983,18 @@ bytebuffer_iterator::operator++()
 }
 
 // 后置++
-bytebuffer_iterator 
-bytebuffer_iterator::operator++(int)
+ByteBufferIterator 
+ByteBufferIterator::operator++(int)
 {
-    bytebuffer_iterator tmp_iter = *this;
+    ByteBufferIterator tmp_iter = *this;
     this->move_postion(1, this->curr_pos_);
 
     return tmp_iter;
 }
 
 // 前置--
-bytebuffer_iterator& 
-bytebuffer_iterator::operator--()
+ByteBufferIterator& 
+ByteBufferIterator::operator--()
 {
     this->move_postion(-1, this->curr_pos_);
 
@@ -1002,26 +1002,26 @@ bytebuffer_iterator::operator--()
 }
 
 // 后置--
-bytebuffer_iterator 
-bytebuffer_iterator::operator--(int)
+ByteBufferIterator 
+ByteBufferIterator::operator--(int)
 {
-    bytebuffer_iterator tmp_iter = *this;
+    ByteBufferIterator tmp_iter = *this;
     this->move_postion(-1, this->curr_pos_);
 
     return tmp_iter;
 }
 
 // +=
-bytebuffer_iterator& 
-bytebuffer_iterator::operator+=(ssize_t inc)
+ByteBufferIterator& 
+ByteBufferIterator::operator+=(ssize_t inc)
 {
     this->move_postion(inc, this->curr_pos_);
 
     return *this;
 }
 
-bytebuffer_iterator& 
-bytebuffer_iterator::operator-=(ssize_t des)
+ByteBufferIterator& 
+ByteBufferIterator::operator-=(ssize_t des)
 {
     this->move_postion(-1 * des, this->curr_pos_);
 
@@ -1030,19 +1030,19 @@ bytebuffer_iterator::operator-=(ssize_t des)
 
 // 只支持 == ,!= , = 其他的比较都不支持
 bool 
-bytebuffer_iterator::operator==(const bytebuffer_iterator& iter) const 
+ByteBufferIterator::operator==(const ByteBufferIterator& iter) const 
 {
     return (curr_pos_ == iter.curr_pos_ && buff_ == iter.buff_);
 }
 
 bool 
-bytebuffer_iterator::operator!=(const bytebuffer_iterator& iter) const 
+ByteBufferIterator::operator!=(const ByteBufferIterator& iter) const 
 {
     return (curr_pos_ != iter.curr_pos_ || buff_ != iter.buff_);
 }
 
 bool 
-bytebuffer_iterator::operator>(const bytebuffer_iterator& iter) const 
+ByteBufferIterator::operator>(const ByteBufferIterator& iter) const 
 {
     if (buff_ != iter.buff_) {
         return false;
@@ -1058,7 +1058,7 @@ bytebuffer_iterator::operator>(const bytebuffer_iterator& iter) const
     return false;
 }
 bool 
-bytebuffer_iterator::operator>=(const bytebuffer_iterator& iter) const 
+ByteBufferIterator::operator>=(const ByteBufferIterator& iter) const 
 {
     if (buff_ != iter.buff_) {
         return false;
@@ -1074,7 +1074,7 @@ bytebuffer_iterator::operator>=(const bytebuffer_iterator& iter) const
     return false;
 }
 bool 
-bytebuffer_iterator::operator<(const bytebuffer_iterator& iter) const 
+ByteBufferIterator::operator<(const ByteBufferIterator& iter) const 
 {
     if (buff_ != iter.buff_) {
         return false;
@@ -1090,7 +1090,7 @@ bytebuffer_iterator::operator<(const bytebuffer_iterator& iter) const
     return true;
 }
 bool 
-bytebuffer_iterator::operator<=(const bytebuffer_iterator& iter) const 
+ByteBufferIterator::operator<=(const ByteBufferIterator& iter) const 
 {
     if (buff_ != iter.buff_) {
         return false;
@@ -1105,8 +1105,8 @@ bytebuffer_iterator::operator<=(const bytebuffer_iterator& iter) const
 
     return true;
 }
-bytebuffer_iterator& 
-bytebuffer_iterator::operator=(const bytebuffer_iterator& src)
+ByteBufferIterator& 
+ByteBufferIterator::operator=(const ByteBufferIterator& src)
 {
     if (src != *this) {
         buff_ = src.buff_;
@@ -1117,14 +1117,14 @@ bytebuffer_iterator::operator=(const bytebuffer_iterator& src)
 }
 
 string 
-bytebuffer_iterator::debug_info(void) 
+ByteBufferIterator::debug_info(void) 
 {
     ostringstream ostr;
 
     ostr << std::endl << "--------------debug_info-----------------------" << std::endl;
     ostr << "curr_pos: " << curr_pos_ << std::endl;
-    ostr << "begin_pos: " << buff_->cbegin().curr_pos_ << std::endl;
-    ostr << "end_pos: " << buff_->cend().curr_pos_ << std::endl;
+    ostr << "begin_pos: " << buff_->begin().curr_pos_ << std::endl;
+    ostr << "end_pos: " << buff_->end().curr_pos_ << std::endl;
     ostr << "buff_length: "  << buff_->data_size() << std::endl;
     ostr << "------------------------------------------------" << std::endl;
 
@@ -1132,7 +1132,7 @@ bytebuffer_iterator::debug_info(void)
 }
 
 bool 
-bytebuffer_iterator::check_iterator(void) 
+ByteBufferIterator::check_iterator(void) 
 {
     if (buff_ == nullptr || buff_->buffer_ == nullptr) {
         curr_pos_ = 0;
@@ -1157,7 +1157,7 @@ bytebuffer_iterator::check_iterator(void)
 }
 
 bool 
-bytebuffer_iterator::move_postion(ssize_t distance, ssize_t &new_postion)
+ByteBufferIterator::move_postion(ssize_t distance, ssize_t &new_postion)
 {
     new_postion = this->curr_pos_ + distance;
     ssize_t start = this->buff_->start_read_pos_;

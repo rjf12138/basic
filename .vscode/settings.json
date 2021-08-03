@@ -39,6 +39,7 @@
         "shared_mutex": "cpp",
         "sstream": "cpp",
         "streambuf": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "stdexcept": "cpp"
     }
 }
