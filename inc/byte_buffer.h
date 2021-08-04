@@ -24,9 +24,6 @@ public:
     ByteBuffer(const buffptr data, ssize_t size);
     virtual ~ByteBuffer();
 
-    // 将ByteBuffer中数据以字符串形式返回
-    std::string str();
-
     ssize_t read_int8(int8_t &val);
     ssize_t read_int16(int16_t &val);
     ssize_t read_int32(int32_t &val);
@@ -34,23 +31,12 @@ public:
     ssize_t read_string(string &str, ssize_t str_size = -1);
     ssize_t read_bytes(void *buf, ssize_t buf_size, bool match = false);
 
-    // 只读不修改读位置
-    ssize_t read_only(ssize_t start_pos, void *buf, ssize_t buf_size, bool match = false);
-
     ssize_t write_int8(int8_t val);
     ssize_t write_int16(int16_t val);
     ssize_t write_int32(int32_t val);
     ssize_t write_int64(int64_t val);
     ssize_t write_string(const string &str, ssize_t str_size = -1);
     ssize_t write_bytes(const void *buf, ssize_t buf_size, bool match = false);
-
-    // 网络字节序转换
-    // 将缓存中的数据读取出来并转成主机字节序返回
-    int read_int16_ntoh(int16_t &val);
-    int read_int32_ntoh(int32_t &val);
-    // 将主机字节序转成网络字节序写入缓存
-    int write_int16_hton(const int16_t &val);
-    int write_int32_hton(const int32_t &val);
 
     bool empty(void) const;
     ssize_t data_size(void) const;
@@ -78,12 +64,16 @@ public:
     const_iterator end(void) const;
     const_iterator last_data(void) const;
 
-    // 获取 ByteBuffer 迭代器指定范围的数据
-    ssize_t get_data(ByteBuffer &out, ByteBufferIterator &copy_start, ssize_t copy_size);
-    //////////////////////////////////////////////////
-
     // 判断 patten 是不是 bytebuffer 从 iter 开始的子串, size: -1 表示匹配全部, 否则指定具体大小
     bool bytecmp(ByteBufferIterator &iter, ByteBuffer &patten, ssize_t size = -1);
+
+    // 将ByteBuffer中数据以字符串形式返回
+    std::string str();
+    // 获取 ByteBuffer 迭代器指定范围的数据
+    ssize_t get_data(ByteBuffer &out, ByteBufferIterator &copy_start, ssize_t copy_size);
+    // 只读不修改读位置
+    ssize_t read_only(ssize_t start_pos, void *buf, ssize_t buf_size, bool match = false);
+    //////////////////////////////////////////////////
 
     // 向外面直接提供 buffer_ 指针，它们写是直接写入指针，避免不必要的拷贝
     buffptr get_write_buffer_ptr(void) const;

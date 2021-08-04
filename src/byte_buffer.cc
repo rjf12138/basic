@@ -417,46 +417,6 @@ ssize_t ByteBuffer::write_bytes(const void *buf, ssize_t buf_size, bool match)
     return this->copy_data_to_buffer(buf, buf_size);
 }
 
-int ByteBuffer::read_int16_ntoh(int16_t &val)
-{
-    int ret = this->read_int16(val);
-    if (ret == 0) {
-        return 0;
-    }
-    val = ntohs(val);
-
-    return ret;
-}
-
-int ByteBuffer::read_int32_ntoh(int32_t &val)
-{
-    int ret = this->read_int32(val);
-    if (ret == 0) {
-        return 0;
-    }
-    val = ntohl(val);
-
-    return ret;
-}
-
-int ByteBuffer::write_int16_hton(const int16_t &val)
-{
-    int16_t tmp = val;
-    tmp = htons(val);
-    int ret = this->write_int16(tmp);
-
-    return ret;
-}
-
-int ByteBuffer::write_int32_hton(const int32_t &val)
-{
-    int32_t tmp = val;
-    tmp = htonl(val);
-    int  ret = this->write_int32(tmp);
-
-    return ret;
-}
-
 ssize_t
 ByteBuffer::get_data(ByteBuffer &out, ByteBufferIterator &copy_start, ssize_t copy_size)
 {

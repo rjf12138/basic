@@ -340,17 +340,20 @@ TEST_F(WeJson_Test, ObjectArrayTest)
         cout << iter->to_string() << endl;
     }
     cout << "=============== End =================" << endl;
-    arr1[4] = obj1;
+    arr1.get_array().add(obj1.get_object());
     obj1.get_object().add("arr", arr1);
-    obj1.to_string();  // 输出后时压缩的
-    obj1.format_json();// 输出后会格式化
+    // obj1.to_string();  // 输出后时压缩的
+    // obj1.format_json();// 输出后会格式化
 
-    cout << obj1.format_json() << endl;
+    // cout << obj1.format_json() << endl;
 
     obj1.get_object().erase("str"); // 对像移除关键字为str的元素
     arr1.get_array().erase(3); // 数组移除下标是 3 的元素
-    cout << obj1.format_json() << endl;
-    cout << arr1.format_json() << endl;
+    // cout << obj1.format_json() << endl;
+    // cout << arr1.format_json() << endl;
+
+    WeJson data("{\"arr\":[\"Hello\",123,false,null,{\"bool\":false,\"int\":123,\"null\":null,\"str\":\"Hello\"}],\"bool\":false}");
+    cout << data.format_json();
 }
 
 }

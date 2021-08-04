@@ -538,7 +538,7 @@ JsonObject::to_string(void)
         }
 
         output_obj << "\"" << iter->first << "\"";
-        output_obj << ": ";
+        output_obj << ":";
         switch (iter->second.type_)
         {
             case JSON_ARRAY_TYPE: {
@@ -1380,7 +1380,6 @@ WeJson::format_json(void)
                 if (raw_json[i] == '[') {
                     bracket_flag = true;
                 }
-                continue;
             } else if (raw_json[i] == '}' || raw_json[i] == ']') {
                 oformat_json << '\n';
                 --tab;
@@ -1392,7 +1391,6 @@ WeJson::format_json(void)
                 if (raw_json[i] == ']') {
                     bracket_flag = false;
                 }
-                continue;
             } else if (quotation_flag == false && raw_json[i] == ',' && (raw_json[i+1] == '"' || bracket_flag == true)) {
                 if (raw_json[i+1] == '"') {
                     quotation_flag = true;
@@ -1402,12 +1400,12 @@ WeJson::format_json(void)
                 for (int j = 0; j < tab; ++j) {
                     oformat_json << '\t';
                 }
-                continue;
             } else {
-                if (raw_json[i] == '"' && (raw_json[i+1] == ',' || raw_json[i+1] == ':') && quotation_flag == true) {
+                // 计算转义符号，防止在字符串内出现 "\"," 这样的格式，确保是不是真的是字符串的结束位置
+                if (raw_json[i] == '"' && (raw_json[i+1] == ',' || raw_json[i+1] == ':' || raw_json[i+1] == '}' || raw_json[i+1] == ']') && quotation_flag == true) {
                     int pos = i;
                     int cnt = 0;
-                    for (;pos >= 0; pos--) {
+                    for ( ; pos >= 0; --pos) {
                         if (raw_json[pos] == '\\') {
                             cnt++;
                         } else {
