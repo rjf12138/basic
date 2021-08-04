@@ -36,6 +36,9 @@ public:
     // 检查当前位置的字符来判断接下来的是什么类型，具体参考doc中的资料
     static ValueType check_value_type(ByteBuffer::iterator &iter);
 
+    // ValueType 转为字符串表示
+    static std::string value_type_to_string(ValueType type);
+
     // 解析遇到的类型，具体取决于check_value_type()返回的类型和继承该类的实现
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos){return ByteBuffer::iterator();}
     
@@ -223,6 +226,7 @@ public:
     JsonValue(const JsonObject &value);
     JsonValue(const JsonArray &value);
     JsonValue(const JsonNull &value);
+    JsonValue(const JsonValue &value);
     
     JsonValue(const bool &value);
     JsonValue(const int &value);
@@ -255,6 +259,9 @@ public:
 
     ValueType type(void) const {return type_;}
     string to_string(void);
+
+public:
+    void copy(const JsonValue &val, bool is_release = true);
 
 public:
     ValueType type_;

@@ -253,24 +253,24 @@ TEST_F(WeJson_Test, ObjectArrayTest)
     WeJson js("{}"), obj("{\"name\":\"Hello, World!\", \"tnull\": null, \"num\": 12.34, \"bool\": true}"), arr("[true, \"Hello\", null, 12.45]");
     ASSERT_EQ((js.get_object().begin() == js.get_object().end()), true);
 
-    js.get_object()["st,r"] = "te\nst,val   ue";
-    js.get_object()["bo ol"] = false;
-    js.get_object()["double"] = 12.3455;
-    js.get_object()["int"] = 12300;
+    js.get_object().add("st,r", "te\nst,val   ue");
+    js.get_object().add("bo ol", false);
+    js.get_object().add("double", 12.3455);
+    js.get_object().add("int", 12300);
+    js.get_object().add("null", JsonNull());
 
-    cout << obj.format_json() <<endl;
-
-    js.get_object()["null"] = JsonNull();
     ASSERT_EQ(js.get_object()["st,r"], "te\nst,val   ue");
+    ASSERT_EQ(js.get_object()["bo ol"], false);
+    ASSERT_EQ(js.get_object()["double"], 12.3455);
+    ASSERT_EQ(js.get_object()["int"], 12300);
+    ASSERT_EQ(js.get_object()["null"], JsonNull());
     
-    cout << js.format_json() <<endl;
-
     arr.get_array().add(obj);
     obj.get_object().add("arr", arr.get_array());
     arr.get_array().add(obj);
     obj.get_object().add("arr2", arr.get_array());
-    js.get_object()["test-obj"] = obj;
-    js.get_object()["test-arr"] = arr;
+    js.get_object().add("test-obj", obj);
+    js.get_object().add("test-arr", arr);
 
     ASSERT_EQ(js.get_object()["test-obj"]["num"], 12.34);
     ASSERT_EQ(js.get_object()["test-obj"]["bool"], true);
@@ -301,15 +301,15 @@ TEST_F(WeJson_Test, ObjectArrayTest)
     bool bval = jbval;
     ASSERT_EQ(bval, true);
 
-    WeJson tmp1(js.to_string()), tmp2(js.format_json());
-    tmp2.get_object()["test-obj"]["num"] = 12.34;
+    // 格式化以及非格式话json重新解析， 然后比较结果
+    WeJson tmp1(js.to_string());
+    WeJson tmp2(js.format_json());
+
     ASSERT_EQ(tmp1, tmp2);
     ASSERT_EQ(tmp1.to_string(), tmp2.to_string());
-    // cout << js.format_json() << endl << js.to_string() << endl;
 
     WeJson cpy_js;
     cpy_js = js;
-    // cout << cpy_js.format_json() << endl;
     
     ASSERT_EQ(cpy_js, js);
     cpy_js.get_object()["test-obj"]["num"] = 12.3;
@@ -342,15 +342,15 @@ TEST_F(WeJson_Test, ObjectArrayTest)
     cout << "=============== End =================" << endl;
     arr1[4] = obj1;
     obj1.get_object().add("arr", arr1);
-    // obj1.to_string();  // 输出后时压缩的
-    // obj1.format_json();// 输出后会格式化
+    obj1.to_string();  // 输出后时压缩的
+    obj1.format_json();// 输出后会格式化
 
     cout << obj1.format_json() << endl;
 
     obj1.get_object().erase("str"); // 对像移除关键字为str的元素
     arr1.get_array().erase(3); // 数组移除下标是 3 的元素
-    // cout << obj1.format_json() << endl;
-    // cout << arr1.format_json() << endl;
+    cout << obj1.format_json() << endl;
+    cout << arr1.format_json() << endl;
 }
 
 }
