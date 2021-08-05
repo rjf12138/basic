@@ -144,7 +144,7 @@ TEST_F(ByteBuffer_Test, ByteBuff_none_lock_read_write)
     char read_buf[4] = {'\0'};
     str = "Nice to meet you";
     for (int i = 0; i < test_cnt; ++i) {
-        buff.write_bytes(str.c_str(), str.length(), str.length());
+        buff.write_bytes(str.c_str(), str.length());
         
         for (std::size_t k = 1; k < 4; ++k) {
             for (std::size_t j = 1; j < str.length(); ++j) {

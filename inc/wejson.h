@@ -21,13 +21,6 @@ enum ValueType {
     JSON_OBJECT_TYPE = 10006
 };
 
-enum NumberType {
-    NONE_TYPE = -1001,
-    INT32_TYPE = 10030,
-    DOUBLE_TYPE = 10031,
-};
-
-
 class JsonType {
 public:
     JsonType(void) {}
@@ -59,7 +52,6 @@ public:
 
     double to_double(void) const  {return value_;}
     int to_int(void) const {return static_cast<int>(value_);}
-    operator double() {return value_;}
 
     bool operator==(const JsonNumber& rhs) const;
     bool operator!=(const JsonNumber& rhs) const;
@@ -83,7 +75,6 @@ public:
     virtual string to_string(void) const;
 
     bool to_bool(void) const  {return value_;}
-    operator bool() {return value_;}
 
     bool operator==(const JsonBool& rhs) const;
     bool operator!=(const JsonBool& rhs) const;
@@ -100,7 +91,6 @@ class JsonNull : public JsonType {
     friend ostream& operator<<(ostream &os, JsonNull &rhs);
 public:
     explicit JsonNull(void);
-    explicit JsonNull(string val);
     ~JsonNull(void);
 
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos) override;
@@ -125,8 +115,6 @@ public:
 
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos) override;
     virtual string to_string(void) const;
-
-    operator std::string() {return value_;}
 
     bool operator==(const JsonString& rhs) const;
     bool operator!=(const JsonString& rhs) const;
@@ -291,12 +279,13 @@ public:
     // 构建成array
     void create_array(void);
 
+    // 返回当前对象类型
+    ValueType get_type(void) const {return JsonValue::type();}
+
     // 构建成object
     JsonObject& get_object(void);
     // 构建成array
     JsonArray& get_array(void);
-
-    ValueType get_type(void) const {return JsonValue::type();}
 
 private:
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos);

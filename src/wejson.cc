@@ -288,10 +288,6 @@ JsonNull::JsonNull(void)
 {
 
 }
-JsonNull::JsonNull(string val)
-: value_(val)
-{
-}
 
 JsonNull::~JsonNull(void)
 {}

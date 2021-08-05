@@ -29,14 +29,14 @@ public:
     ssize_t read_int32(int32_t &val);
     ssize_t read_int64(int64_t &val);
     ssize_t read_string(string &str, ssize_t str_size = -1);
-    ssize_t read_bytes(void *buf, ssize_t buf_size, bool match = false);
+    ssize_t read_bytes(void *buf, ssize_t buf_size);
 
     ssize_t write_int8(int8_t val);
     ssize_t write_int16(int16_t val);
     ssize_t write_int32(int32_t val);
     ssize_t write_int64(int64_t val);
     ssize_t write_string(const string &str, ssize_t str_size = -1);
-    ssize_t write_bytes(const void *buf, ssize_t buf_size, bool match = false);
+    ssize_t write_bytes(const void *buf, ssize_t buf_size);
 
     bool empty(void) const;
     ssize_t data_size(void) const;
@@ -52,7 +52,9 @@ public:
     bool operator==(const ByteBuffer &rhs) const;
     bool operator!=(const ByteBuffer &rhs) const;
     ByteBuffer& operator=(const ByteBuffer& src);
+
     bufftype& operator[](ssize_t index);
+    bufftype& operator[](const ssize_t &index) const;
 
     // 返回起始结束迭代器
     iterator begin(void);
@@ -66,13 +68,12 @@ public:
 
     // 判断 patten 是不是 bytebuffer 从 iter 开始的子串, size: -1 表示匹配全部, 否则指定具体大小
     bool bytecmp(ByteBufferIterator &iter, ByteBuffer &patten, ssize_t size = -1);
-
     // 将ByteBuffer中数据以字符串形式返回
     std::string str();
     // 获取 ByteBuffer 迭代器指定范围的数据
     ssize_t get_data(ByteBuffer &out, ByteBufferIterator &copy_start, ssize_t copy_size);
     // 只读不修改读位置
-    ssize_t read_only(ssize_t start_pos, void *buf, ssize_t buf_size, bool match = false);
+    ssize_t read_only(ssize_t start_pos, void *buf, ssize_t buf_size);
     //////////////////////////////////////////////////
 
     // 向外面直接提供 buffer_ 指针，它们写是直接写入指针，避免不必要的拷贝
@@ -89,24 +90,24 @@ public:
 
     // ===================== 操作ByteBuffer ======================
     // 返回 ByteBuffer 中所有匹配 buff 的迭代器
-    std::vector<ByteBufferIterator> find(ByteBuffer buff);
+    std::vector<ByteBufferIterator> find(const ByteBuffer &buff);
     
     // 根据 buff 分割 ByteBuffer
-    vector<ByteBuffer> split(ByteBuffer buff);
+    std::vector<ByteBuffer> split(const ByteBuffer &buff);
 
     // 将 Bytebuffer 中 buf1 替换为 buf2
-    ByteBuffer replace(ByteBuffer buf1, ByteBuffer buf2, ssize_t index = -1);
+    ByteBuffer replace(ByteBuffer buf1, const ByteBuffer &buf2, ssize_t index = -1);
 
     // 移除 ByteBuff 中匹配 buff 的子串
     // index 指定第几个匹配的子串， index 超出范围时，删除所有匹配子串, index 从0 开始计数
-    ByteBuffer remove(ByteBuffer buff, ssize_t index = -1);
+    ByteBuffer remove(const ByteBuffer &buff, ssize_t index = -1);
 
     // 在 ByteBuff 指定迭代器前/后插入子串 buff
-    ssize_t insert_front(ByteBufferIterator &insert_iter, ByteBuffer buff);
-    ssize_t insert_back(ByteBufferIterator &insert_iter, ByteBuffer buff);
+    ssize_t insert_front(ByteBufferIterator &insert_iter, const ByteBuffer &buff);
+    ssize_t insert_back(ByteBufferIterator &insert_iter, const ByteBuffer &buff);
 
     // 返回符合模式 regex 的子串(使用正则表达式)
-    vector<ByteBuffer> match(ByteBuffer regex);
+    std::vector<ByteBuffer> match(ByteBuffer &regex);
 
 private:
     // 设置外部缓存

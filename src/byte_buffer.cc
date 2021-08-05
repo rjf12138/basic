@@ -260,12 +260,7 @@ ssize_t ByteBuffer::copy_data_from_buffer(void *data, ssize_t size)
     if (data == nullptr  || size <= 0) {
         return 0;
     }
-   
-    // if (this->data_size() < size) {
-    //     fprintf(stderr, "ByteBuffer remain data(%ld) is less than size(%ld)!\n", this->data_size(), size);
-    //     return 0;
-    // }
-
+    
     ssize_t copy_size = size;
     buffptr data_ptr = static_cast<buffptr>(data);
     
@@ -314,17 +309,14 @@ ByteBuffer::read_int64(int64_t &val)
 ssize_t
 ByteBuffer::read_string(string &str, ssize_t str_size)
 {
-    if (this->empty()) {
+    if (this->empty() || str_size <= 0) {
         return 0;
-    }
-
-    if (str_size == -1) {
-        str_size = this->data_size();
     }
 
     char *str_ptr = new char[str_size + 1];
     ssize_t ret =  this->copy_data_from_buffer(str_ptr, str_size);
     if (ret == 0) {
+        delete[] str_ptr;
         return 0;
     }
     str_ptr[str_size] = '\0';
@@ -335,17 +327,13 @@ ByteBuffer::read_string(string &str, ssize_t str_size)
 }
 
 ssize_t 
-ByteBuffer::read_bytes(void *buf, ssize_t buf_size, bool match)
+ByteBuffer::read_bytes(void *buf, ssize_t buf_size)
 {
-    if (buf == nullptr) {
-        return 0;
-    }
-
     return this->copy_data_from_buffer(buf, buf_size);
 }
 
 ssize_t 
-ByteBuffer::read_only(ssize_t start_pos, void *buf, ssize_t buf_size, bool match)
+ByteBuffer::read_only(ssize_t start_pos, void *buf, ssize_t buf_size)
 {
     if (buf == nullptr) {
         return 0;
@@ -359,7 +347,6 @@ ByteBuffer::read_only(ssize_t start_pos, void *buf, ssize_t buf_size, bool match
     if (ret == -1) {
         return 0;
     }
-    
     ret = this->copy_data_from_buffer(buf, buf_size);
 
     this->start_read_pos_ = old_read_pos;
@@ -372,9 +359,11 @@ ByteBuffer::read_only(ssize_t start_pos, void *buf, ssize_t buf_size, bool match
 std::string 
 ByteBuffer::str()
 {
-    std::string str;
-    this->read_string(str);
-
+    bufftype *buffer = new bufftype[data_size() + 1];
+    memset(buffer, 0, data_size() + 1);
+    read_only(0, buffer, data_size());
+    string str = buffer;
+    delete[] buffer;
     return str;
 }
 
@@ -408,12 +397,8 @@ ByteBuffer::write_string(const string &str, ssize_t str_size)
     return this->copy_data_to_buffer(str.c_str(), str.length());
 }
 
-ssize_t ByteBuffer::write_bytes(const void *buf, ssize_t buf_size, bool match)
+ssize_t ByteBuffer::write_bytes(const void *buf, ssize_t buf_size)
 {
-    if (buf == NULL) {
-        return 0;
-    }
-
     return this->copy_data_to_buffer(buf, buf_size);
 }
 
@@ -549,6 +534,21 @@ ByteBuffer::operator[](ssize_t index)
     return buffer_[index];
 }
 
+bufftype& 
+ByteBuffer::operator[](const ssize_t &index) const
+{
+    ssize_t size = this->data_size();
+    if (size <= 0 || index >= size) {
+        ostringstream ostr;
+        ostr << "Line: " << __LINE__ << " out of range.";
+        throw runtime_error(ostr.str());
+    }
+
+    ssize_t new_index = (this->start_read_pos_ + index) %  max_buffer_size_;
+
+    return buffer_[new_index];
+}
+
 bool 
 ByteBuffer::bytecmp(ByteBufferIterator &iter, ByteBuffer &patten, ssize_t size)
 {
@@ -650,7 +650,7 @@ ByteBuffer::update_read_pos(ssize_t offset)
 
 ///////////////////////////// 操作 ByteBuffer /////////////////////////////
 std::vector<ByteBufferIterator>
-ByteBuffer::find(ByteBuffer patten)
+ByteBuffer::find(const ByteBuffer &patten)
 {
     std::vector<ByteBufferIterator> result;
     if (patten.data_size() == 0 || this->data_size() == 0) {
@@ -681,7 +681,7 @@ ByteBuffer::find(ByteBuffer patten)
 }
 
 std::vector<ByteBuffer> 
-ByteBuffer::split(ByteBuffer buff)
+ByteBuffer::split(const ByteBuffer &buff)
 {
     std::vector<ByteBuffer> result;
     if (buff.data_size() <= 0 || this->data_size() <= 0) {
@@ -720,7 +720,7 @@ ByteBuffer::split(ByteBuffer buff)
 
 
 ByteBuffer 
-ByteBuffer::replace(ByteBuffer buf1, ByteBuffer buf2, ssize_t index)
+ByteBuffer::replace(ByteBuffer buf1, const ByteBuffer &buf2, ssize_t index)
 {
     if (buf1.data_size() <= 0 || this->data_size() <= 0) {
         return *this;
@@ -765,7 +765,7 @@ ByteBuffer::replace(ByteBuffer buf1, ByteBuffer buf2, ssize_t index)
 
 
 ByteBuffer 
-ByteBuffer::remove(ByteBuffer buff, ssize_t index)
+ByteBuffer::remove(const ByteBuffer &buff, ssize_t index)
 {
     if (buff.data_size() <= 0 || this->data_size() <= 0) {
         return *this;
@@ -802,7 +802,7 @@ ByteBuffer::remove(ByteBuffer buff, ssize_t index)
 }
 
 ssize_t 
-ByteBuffer::insert_front(ByteBufferIterator &insert_iter, ByteBuffer buff)
+ByteBuffer::insert_front(ByteBufferIterator &insert_iter, const ByteBuffer &buff)
 {
     ByteBuffer tmp_buf, result;
     if (!(insert_iter >= this->begin() && 
@@ -825,7 +825,7 @@ ByteBuffer::insert_front(ByteBufferIterator &insert_iter, ByteBuffer buff)
 }
 
 ssize_t 
-ByteBuffer::insert_back(ByteBufferIterator &insert_iter, ByteBuffer buff)
+ByteBuffer::insert_back(ByteBufferIterator &insert_iter, const ByteBuffer &buff)
 {
     ByteBuffer tmp_buf, result;
     if (!(insert_iter >= this->begin() && 
@@ -850,7 +850,7 @@ ByteBuffer::insert_back(ByteBufferIterator &insert_iter, ByteBuffer buff)
 
     // 返回符合模式 regex 的子串(使用正则表达式)
 vector<ByteBuffer> 
-ByteBuffer::match(ByteBuffer regex_str)
+ByteBuffer::match(ByteBuffer &regex_str)
 {
     vector<ByteBuffer> ret_match_str;
     std::regex reg(regex_str.str());

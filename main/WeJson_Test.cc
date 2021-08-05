@@ -288,17 +288,17 @@ TEST_F(WeJson_Test, ObjectArrayTest)
 
     JsonNumber jnumval = js.get_object()["test-obj"]["num"]; // 不能直接将double类型的json值赋给double
     ASSERT_EQ(jnumval, 12.34);
-    double numval = jnumval;
+    double numval = jnumval.to_double();
     ASSERT_EQ(numval, 12.34);
 
     JsonString jstrval = js.get_object()["test-obj"]["name"];
     ASSERT_EQ(jstrval, "Hello, World!");
-    string strval = jstrval;
+    string strval = jstrval.to_string();
     ASSERT_EQ(strval, "Hello, World!");
 
     JsonBool jbval = js.get_object()["test-obj"]["bool"];
     ASSERT_EQ(jbval, true);
-    bool bval = jbval;
+    bool bval = jbval.to_bool();
     ASSERT_EQ(bval, true);
 
     // 格式化以及非格式话json重新解析， 然后比较结果
