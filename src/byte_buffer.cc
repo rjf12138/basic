@@ -309,8 +309,12 @@ ByteBuffer::read_int64(int64_t &val)
 ssize_t
 ByteBuffer::read_string(string &str, ssize_t str_size)
 {
-    if (this->empty() || str_size <= 0) {
+    if (this->empty()) {
         return 0;
+    }
+
+    if (str_size == -1) {
+        str_size = this->data_size();
     }
 
     char *str_ptr = new char[str_size + 1];
