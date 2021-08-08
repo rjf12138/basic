@@ -17,8 +17,8 @@ target_compile_options(basic_compiler_flags INTERFACE
 		$<${msvc_cxx}:$<BUILD_INTERFACE:-W3>>)
 
 # 设置生成文件输出路径
-set(EXECUTABLE_OUTPUT_PATH, ./output/debug/bin)
-add_executable(basic ./main/Logger_Test.cc)
+set(LIBRARY_OUTPUT_PATH, ./output/debug/lib)
+add_library(basic STATIC "")
 
 target_include_directories(basic PUBLIC ./inc/)
 target_include_directories(basic PRIVATE ./extern_inc/)
