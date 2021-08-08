@@ -27,7 +27,6 @@ ByteBuffer::ByteBuffer(ssize_t size)
         free_data_size_ = max_buffer_size_ - 1;
         buffer_ = new bufftype[max_buffer_size_];
     }
-    vector<int>::iterator str;
 }
 
 ByteBuffer::ByteBuffer(const ByteBuffer &buff)
@@ -307,7 +306,7 @@ ByteBuffer::read_int64(int64_t &val)
 
 // 字符串是以 ‘\0’ 结尾的
 ssize_t
-ByteBuffer::read_string(string &str, ssize_t str_size)
+ByteBuffer::read_string(std::string &str, ssize_t str_size)
 {
     if (this->empty()) {
         return 0;
@@ -366,7 +365,7 @@ ByteBuffer::str()
     bufftype *buffer = new bufftype[data_size() + 1];
     memset(buffer, 0, data_size() + 1);
     read_only(0, buffer, data_size());
-    string str = buffer;
+    std::string str = buffer;
     delete[] buffer;
     return str;
 }
@@ -396,7 +395,7 @@ ByteBuffer::write_int64(int64_t val)
 }
 
 ssize_t
-ByteBuffer::write_string(const string &str, ssize_t str_size)
+ByteBuffer::write_string(const std::string &str, ssize_t str_size)
 {
     return this->copy_data_to_buffer(str.c_str(), str.length());
 }
@@ -528,7 +527,7 @@ ByteBuffer::operator[](ssize_t index)
 {
     ssize_t size = this->data_size();
     if (size <= 0 || index >= size) {
-        throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR, "Out of range.[index: %d]", index));
+        throw std::runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR, "Out of range.[index: %d]", index));
     }
 
     index = (this->start_read_pos_ + index) %  max_buffer_size_;
@@ -541,7 +540,7 @@ ByteBuffer::operator[](const ssize_t &index) const
 {
     ssize_t size = this->data_size();
     if (size <= 0 || index >= size) {
-        throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR, "Out of range.[index: %d]", index));
+        throw std::runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR, "Out of range.[index: %d]", index));
     }
 
     ssize_t new_index = (this->start_read_pos_ + index) %  max_buffer_size_;
@@ -849,10 +848,10 @@ ByteBuffer::insert_back(ByteBufferIterator &insert_iter, const ByteBuffer &buff)
 }
 
     // 返回符合模式 regex 的子串(使用正则表达式)
-vector<ByteBuffer> 
+std::vector<ByteBuffer> 
 ByteBuffer::match(ByteBuffer &regex_str)
 {
-    vector<ByteBuffer> ret_match_str;
+    std::vector<ByteBuffer> ret_match_str;
     std::regex reg(regex_str.str());
     std::string content(this->str());
     std::smatch m;
@@ -888,7 +887,7 @@ bufftype
 ByteBufferIterator::operator*()
 {
     if (this->check_iterator() == false) {
-        throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR, "Msg: out of range. Info:\n%s", this->debug_info().c_str()));
+        throw std::runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR, "Msg: out of range. Info:\n%s", this->debug_info().c_str()));
     }
     return buff_->buffer_[curr_pos_];
 }
@@ -1076,10 +1075,10 @@ ByteBufferIterator::operator=(const ByteBufferIterator& src)
     return *this;
 }
 
-string 
+std::string 
 ByteBufferIterator::debug_info(void) 
 {
-    ostringstream ostr;
+    std::ostringstream ostr;
 
     ostr << std::endl << "--------------debug_info-----------------------" << std::endl;
     ostr << "curr_pos: " << curr_pos_ << std::endl;

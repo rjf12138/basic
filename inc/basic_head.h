@@ -18,7 +18,7 @@
 #include <utility>
 #include <regex>
 
-using namespace std;
+// using namespace std;
 
 
 #ifdef __gnu_linux__ 

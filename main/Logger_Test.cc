@@ -50,31 +50,31 @@ void print_msg(void)
 int main(void)
 {
     SET_GLOBAL_PRINT_LEVEL(LOG_LEVEL_LOW);
-    cout << "===============LOG_LEVEL_LOW=======================" << endl;
+    std::cout << "===============LOG_LEVEL_LOW=======================" << std::endl;
     print_msg();
 
     SET_GLOBAL_PRINT_LEVEL(LOG_LEVEL_TRACE);
-    cout << "===============LOG_LEVEL_TRACE=======================" << endl;
+    std::cout << "===============LOG_LEVEL_TRACE=======================" << std::endl;
     print_msg();
 
     SET_GLOBAL_PRINT_LEVEL(LOG_LEVEL_DEBUG);
-    cout << "===============LOG_LEVEL_DEBUG=======================" << endl;
+    std::cout << "===============LOG_LEVEL_DEBUG=======================" << std::endl;
     print_msg();
 
     SET_GLOBAL_PRINT_LEVEL(LOG_LEVEL_INFO);
-    cout << "===============LOG_LEVEL_INFO=======================" << endl;
+    std::cout << "===============LOG_LEVEL_INFO=======================" << std::endl;
     print_msg();
 
     SET_GLOBAL_PRINT_LEVEL(LOG_LEVEL_ERROR);
-    cout << "===============LOG_LEVEL_ERROR=======================" << endl;
+    std::cout << "===============LOG_LEVEL_ERROR=======================" << std::endl;
     print_msg();
 
     SET_GLOBAL_PRINT_LEVEL(LOG_LEVEL_FATAL);
-    cout << "===============LOG_LEVEL_FATAL=======================" << endl;
+    std::cout << "===============LOG_LEVEL_FATAL=======================" << std::endl;
     print_msg();
 
     SET_GLOBAL_PRINT_LEVEL(LOG_LEVEL_MAX);
-    cout << "===============LOG_LEVEL_MAX=======================" << endl;
+    std::cout << "===============LOG_LEVEL_MAX=======================" << std::endl;
     print_msg();
 
     MsgTest m_test;

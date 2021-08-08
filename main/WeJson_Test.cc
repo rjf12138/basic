@@ -39,7 +39,7 @@ void random_str(int setlen, ByteBuffer &buff1, ByteBuffer &buff2)
 
 bool str_compare(ByteBuffer &buff1, ByteBuffer &buff2)
 {
-    string str;
+    std::string str;
     buff2.read_string(str);
     JsonString js_str_t1(str);
     bool ret = (str.length() == js_str_t1.to_string().length());
@@ -103,20 +103,20 @@ protected:
     }
 };
 
-bool test_number(double val, string str_val)
+bool test_number(double val, std::string str_val)
 {
 //    fprintf(stdout, "double: %lf, str_double: %s\n", val, str_val.c_str());
     JsonNumber json_number(val);
-    ostringstream ostr;
+    std::ostringstream ostr;
     ostr << json_number;
-    if (stod(ostr.str().c_str()) == stod(str_val.c_str())) {
+    if (std::stod(ostr.str().c_str()) == std::stod(str_val.c_str())) {
         return true;
     }
     fprintf(stdout, "double: %lf, str_double: %s, convert_double: %s\n", val, str_val.c_str(), ostr.str().c_str());
     return false;
 }
 
-bool test_parse_number(double val, string str_val)
+bool test_parse_number(double val, std::string str_val)
 {
     ByteBuffer buff;
     buff.write_string(str_val, str_val.length());
@@ -125,7 +125,7 @@ bool test_parse_number(double val, string str_val)
     auto str_number_end = buff.end();
     json_number.parse(str_number_begin, str_number_end);
 
-    if (stod(json_number.to_string().c_str()) == stod(str_val.c_str())) {
+    if (std::stod(json_number.to_string().c_str()) == std::stod(str_val.c_str())) {
         return true;
     }
 
@@ -178,7 +178,7 @@ TEST_F(WeJson_Test, NUMBER_TEST)
     ASSERT_EQ(test_number(-0.123456789, "-0.123457"), true);
     try {
         ASSERT_EQ(test_parse_number(0, "03"), true);
-    }catch (exception &e) {
+    }catch (std::exception &e) {
         std::cout << "===============异常测试=================" << std::endl;
         std::cout << e.what() << std::endl;
         std::cout << "=======================================" << std::endl;
@@ -244,7 +244,7 @@ TEST_F(WeJson_Test, ObjectArrayTest)
 {
     try {
         WeJson js("");
-    } catch (exception &e) {
+    } catch (std::exception &e) {
         std::cout << "===============异常测试=================" << std::endl;
         std::cout << e.what() << std::endl;
         std::cout << "=======================================" << std::endl;
@@ -293,7 +293,7 @@ TEST_F(WeJson_Test, ObjectArrayTest)
 
     JsonString jstrval = js.get_object()["test-obj"]["name"];
     ASSERT_EQ(jstrval, "Hello, World!");
-    string strval = jstrval.to_string();
+    std::string strval = jstrval.to_string();
     ASSERT_EQ(strval, "Hello, World!");
 
     JsonBool jbval = js.get_object()["test-obj"]["bool"];
@@ -331,29 +331,29 @@ TEST_F(WeJson_Test, ObjectArrayTest)
     arr1.get_array().add(JsonNull());
 
     // 迭代器
-    cout << "============== Object ==============" << endl;
+    std::cout << "============== Object ==============" << std::endl;
     for (auto iter = obj1.get_object().begin(); iter != obj1.get_object().end(); ++iter) {
-        cout << iter->second.to_string() << endl;
+        std::cout << iter->second.to_string() << std::endl;
     }
-    cout << "============== Array ==============" << endl;
+    std::cout << "============== Array ==============" << std::endl;
     for (auto iter = arr1.get_array().begin(); iter != arr1.get_array().end(); ++iter) {
-        cout << iter->to_string() << endl;
+        std::cout << iter->to_string() << std::endl;
     }
-    cout << "=============== End =================" << endl;
+    std::cout << "=============== End =================" << std::endl;
     arr1.get_array().add(obj1.get_object());
     obj1.get_object().add("arr", arr1);
     // obj1.to_string();  // 输出后时压缩的
     // obj1.format_json();// 输出后会格式化
 
-    // cout << obj1.format_json() << endl;
+    // std::cout << obj1.format_json() << std::endl;
 
     obj1.get_object().erase("str"); // 对像移除关键字为str的元素
     arr1.get_array().erase(3); // 数组移除下标是 3 的元素
-    // cout << obj1.format_json() << endl;
-    // cout << arr1.format_json() << endl;
+    // std::cout << obj1.format_json() << std::endl;
+    // std::cout << arr1.format_json() << std::endl;
 
     WeJson data("{\"arr\":[\"Hello\",123,false,null,{\"bool\":false,\"int\":123,\"null\":null,\"str\":\"Hello\"}],\"bool\":false}");
-    cout << data.format_json();
+    std::cout << data.format_json();
 }
 
 }

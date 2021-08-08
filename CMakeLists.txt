@@ -18,7 +18,7 @@ target_compile_options(basic_compiler_flags INTERFACE
 
 # 设置生成文件输出路径
 set(EXECUTABLE_OUTPUT_PATH, ./output/debug/bin)
-add_executable(basic ./main/WeJson_Test.cc)
+add_executable(basic ./main/Logger_Test.cc)
 
 target_include_directories(basic PUBLIC ./inc/)
 target_include_directories(basic PRIVATE ./extern_inc/)

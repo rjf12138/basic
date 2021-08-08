@@ -28,14 +28,14 @@ public:
     ssize_t read_int16(int16_t &val);
     ssize_t read_int32(int32_t &val);
     ssize_t read_int64(int64_t &val);
-    ssize_t read_string(string &str, ssize_t str_size = -1);
+    ssize_t read_string(std::string &str, ssize_t str_size = -1);
     ssize_t read_bytes(void *buf, ssize_t buf_size);
 
     ssize_t write_int8(int8_t val);
     ssize_t write_int16(int16_t val);
     ssize_t write_int32(int32_t val);
     ssize_t write_int64(int64_t val);
-    ssize_t write_string(const string &str, ssize_t str_size = -1);
+    ssize_t write_string(const std::string &str, ssize_t str_size = -1);
     ssize_t write_bytes(const void *buf, ssize_t buf_size);
 
     bool empty(void) const;
@@ -168,7 +168,7 @@ public:
     bool operator<=(const ByteBufferIterator& iter) const;
     ByteBufferIterator& operator=(const ByteBufferIterator& src);
 
-    string debug_info(void);
+    std::string debug_info(void);
 private:
     ByteBufferIterator(const ByteBuffer *buffer, const ssize_t &pos);
     bool check_iterator(void);

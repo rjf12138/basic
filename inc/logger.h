@@ -19,21 +19,21 @@ enum InfoLevel {
 struct MsgContent {
     InfoLevel info_level;
     int which_line;
-    string when;
-    string which_file;
-    string msg_func;
-    string msg_info;
+    std::string when;
+    std::string which_file;
+    std::string msg_func;
+    std::string msg_info;
 };
 
 /////////////////////////////////////////////////////
 // 默认标准输出函数
-extern int output_to_stdout(const string &msg);
+extern int output_to_stdout(const std::string &msg);
 // 默认标准出错函数
-extern int output_to_stderr(const string &msg);
+extern int output_to_stderr(const std::string &msg);
 
 /////////////////////////////////////////////////////
 // 如果是多线程使用同一个回调函数来写消息， 在函数中需要处理消息的同步写。
-typedef int (*msg_to_stream_callback)(const string &);
+typedef int (*msg_to_stream_callback)(const std::string &);
 
 /////////////////////////////////////////////////////
 // 设置到终端输出字符串颜色
@@ -47,7 +47,7 @@ enum StringColor {
     StringColor_Cyan        // 蓝绿色
 };
 // 返回带颜色设置的字符串
-string set_string_color(const string &str, StringColor color);
+std::string set_string_color(const std::string &str, StringColor color);
 
 class Logger {
 public:
@@ -58,14 +58,14 @@ public:
     void set_print_level(InfoLevel level);
 
     // 将消息通过设定的回调函数输出
-    virtual void print_msg(InfoLevel level, int line, string file_name, string func, const char *format, ...);
+    virtual void print_msg(InfoLevel level, int line, std::string file_name, std::string func, const char *format, ...);
     // 将消息以字符串方式返回
-    virtual string get_msg(InfoLevel level, int line, string file_name, string func, const char *format, ...);
+    virtual std::string get_msg(InfoLevel level, int line, std::string file_name, std::string func, const char *format, ...);
 
     // 组装消息
-    void assemble_msg(ostringstream &ostr, const MsgContent &msg, bool is_color_enable = false);
+    void assemble_msg(std::ostringstream &ostr, const MsgContent &msg, bool is_color_enable = false);
     // 消息等级转为字符串
-    string level_convert(InfoLevel level);
+    std::string level_convert(InfoLevel level);
 
     // 设置消息回调函数
     void set_stream_func(InfoLevel level, msg_to_stream_callback func);

@@ -14,11 +14,11 @@ namespace {
 #define TEST_COUNT 8000
 
 ////////////////////////////测试工具函数//////////////////////////////////
-vector<ByteBuffer>
+std::vector<ByteBuffer>
 random_str(ByteBuffer &src, ByteBuffer &patten, int gap)
 {
     ByteBuffer front_str, back_str;
-    vector<ByteBuffer> ret;
+    std::vector<ByteBuffer> ret;
 
     int j = 0;
     for (auto iter = src.begin(); iter != src.end(); ++iter) {
@@ -116,12 +116,12 @@ TEST_F(ByteBuffer_Test, ByteBuff_none_lock_read_write)
         ASSERT_EQ(val_64, 65566536);
     }
     // 读写字符串
-    string str = "Hello, world";
+    std::string str = "Hello, world";
     for (int i = 0; i < test_cnt; ++i) {
         ASSERT_EQ(buff.data_size(), 0);
         ASSERT_EQ((std::size_t)buff.write_string(str), str.length());
         ASSERT_EQ((std::size_t)buff.data_size(), str.length());
-        string val_str;
+        std::string val_str;
         ASSERT_EQ((std::size_t)buff.read_string(val_str), str.length());
         ASSERT_EQ(buff.data_size(), 0);
         ASSERT_EQ(val_str, str);
@@ -155,7 +155,7 @@ TEST_F(ByteBuffer_Test, ByteBuff_none_lock_read_write)
             }
         }
 
-        string tmpstr;
+        std::string tmpstr;
         buff.read_string(tmpstr);
     }
 }
@@ -285,12 +285,12 @@ TEST_F(ByteBuffer_Test, ByteBuffer_increase)
     ASSERT_EQ(buff16.data_size(), 0);
     ASSERT_EQ(write_cnt, read_cnt);
     ////////////////////////////////// 16 ////////////////////////////////////////
-    // 读 string 数据
+    // 读 std::string 数据
     write_cnt = 0, read_cnt = 0;
     ByteBuffer buffbyte;
 
-    // 写 string 数据
-    string str = "sadjklfafks78934729374^*&^&%^&$^%$^%";
+    // 写 std::string 数据
+    std::string str = "sadjklfafks78934729374^*&^&%^&$^%$^%";
     while(true) {
         size_t ret = buffbyte.write_string(str);
         if (ret != str.length()) {
@@ -302,7 +302,7 @@ TEST_F(ByteBuffer_Test, ByteBuffer_increase)
     ASSERT_LE(buffbyte.idle_size(), (ssize_t)str.length());
 
     while(true) {
-        string read_str;
+        std::string read_str;
         size_t ret = buffbyte.read_string(read_str, str.length());
         if (ret != str.length() || read_str != str) {
             break;
@@ -327,9 +327,9 @@ TEST_F(ByteBuffer_Test, ByteBuffer_increase)
     ASSERT_LE(buffbyte.idle_size(), (ssize_t)str.length());
 
 
-    // 再次读 string 位数据
+    // 再次读 std::string 位数据
     while(true) {
-        string read_str;
+        std::string read_str;
         size_t ret = buffbyte.read_string(read_str, str.length());
         if (ret != str.length() || str != read_str) {
             break;
@@ -436,8 +436,8 @@ TEST_F(ByteBuffer_Test, iterator)
 {
     ByteBuffer buff;
 
-    string str = "Hello, world! Everyone";
-    string str2= "Good Morning! Everyone...";
+    std::string str = "Hello, world! Everyone";
+    std::string str2= "Good Morning! Everyone...";
 
     // 两个字符串交叉写
     for (int i = 0; i < 5000; ++i) {
@@ -469,7 +469,7 @@ TEST_F(ByteBuffer_Test, iterator)
         }
     }
 
-    string read_str;
+    std::string read_str;
     read_cnt = str.length();
     choose_read_str = false;
     for (auto iter = buff.begin(); iter != buff.end(); ++iter) {
@@ -519,7 +519,7 @@ TEST_F(ByteBuffer_Test, iterator)
     try {
         char ch = *iter1;
         ch = ch + 1;
-    } catch (runtime_error &e) {
+    } catch (std::runtime_error &e) {
         throw_error = true;
     }
     ASSERT_EQ(throw_error, true);
@@ -607,7 +607,7 @@ TEST_F(ByteBuffer_Test, operate_buffer)
     ASSERT_EQ(data, ByteBuffer("abbc"));
     // 测试 insert_front 和 insert_back
     ByteBuffer src_buf("Hello");
-    vector<string> ins_bufs = {"", "1", "12", "12345"};
+    std::vector<std::string> ins_bufs = {"", "1", "12", "12345"};
     
     auto beg_iter = src_buf.begin();
     src_buf.insert_front(beg_iter, ByteBuffer("12"));
@@ -659,9 +659,9 @@ TEST_F(ByteBuffer_Test, operate_buffer)
         }
 
         for (int gap = 1; gap < 10; ++gap) {
-            vector<ByteBuffer> ret = random_str(src, patten, gap);
-            vector<ByteBuffer> split_1 = ret[0].split(patten);
-            vector<ByteBuffer> split_2 = ret[1].split(patten);
+            std::vector<ByteBuffer> ret = random_str(src, patten, gap);
+            std::vector<ByteBuffer> split_1 = ret[0].split(patten);
+            std::vector<ByteBuffer> split_2 = ret[1].split(patten);
 
             ssize_t split1_len = 0, split2_len = 0;
             for (std::size_t is = 0; is < split_1.size(); ++is) {

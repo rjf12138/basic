@@ -7,7 +7,7 @@
 
 namespace basic {
 // json中重要的分割字符
-const vector<char> sperate_chars = {' ', '\r', '\n','\t','{', '}','[', ']',',',':','"'};
+const std::vector<char> sperate_chars = {' ', '\r', '\n','\t','{', '}','[', ']',',',':','"'};
 
 class JsonValue;
 
@@ -36,19 +36,19 @@ public:
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos){return ByteBuffer::iterator();}
     
     // 将json值反序列化为字符串输出， 没有格式化
-    virtual string to_string(void) { return "";}
+    virtual std::string to_string(void) { return "";}
 };
 
 // json 数值类型
 class JsonNumber : public JsonType {
-    friend ostream& operator<<(ostream &os, JsonNumber &rhs);
+    friend std::ostream& operator<<(std::ostream &os, JsonNumber &rhs);
 public:
     explicit JsonNumber(void);
     explicit JsonNumber(const double &val);
     ~JsonNumber(void);
 
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos) override;
-    virtual string to_string(void) override;
+    virtual std::string to_string(void) override;
 
     double to_double(void) const  {return value_;}
     int to_int(void) const {return static_cast<int>(value_);}
@@ -65,14 +65,14 @@ private:
 
 // json 布尔类型
 class JsonBool : public JsonType {
-    friend ostream& operator<<(ostream &os, JsonBool &rhs);
+    friend std::ostream& operator<<(std::ostream &os, JsonBool &rhs);
 public:
     explicit JsonBool(void);
     explicit JsonBool(bool val);
     ~JsonBool(void);
 
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos) override;
-    virtual string to_string(void) const;
+    virtual std::string to_string(void) const;
 
     bool to_bool(void) const  {return value_;}
 
@@ -88,50 +88,50 @@ private:
 
 // json null 类型
 class JsonNull : public JsonType {
-    friend ostream& operator<<(ostream &os, JsonNull &rhs);
+    friend std::ostream& operator<<(std::ostream &os, JsonNull &rhs);
 public:
     explicit JsonNull(void);
     ~JsonNull(void);
 
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos) override;
-    virtual string to_string(void) const;
+    virtual std::string to_string(void) const;
 
     bool operator==(const JsonNull& rhs) const;
     bool operator!=(const JsonNull& rhs) const;
     JsonNull& operator=(JsonNull rhs);
 
 private:
-    string value_;
+    std::string value_;
 };
 
 // json 字符串类型
 class JsonString : public JsonType {
-    friend ostream& operator<<(ostream &os, JsonString &rhs);
+    friend std::ostream& operator<<(std::ostream &os, JsonString &rhs);
 public:
     explicit JsonString(void);
-    explicit JsonString(string val);
+    explicit JsonString(std::string val);
     explicit JsonString(const char *val);
     ~JsonString(void);
 
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos) override;
-    virtual string to_string(void) const;
+    virtual std::string to_string(void) const;
 
     bool operator==(const JsonString& rhs) const;
     bool operator!=(const JsonString& rhs) const;
-    bool operator==(const string& rhs) const;
-    bool operator!=(const string& rhs) const;
+    bool operator==(const std::string& rhs) const;
+    bool operator!=(const std::string& rhs) const;
     JsonString& operator=(JsonString rhs);
 
 private:
-    string value_;
+    std::string value_;
 };
 
 class JsonValue;
 class JsonObject : public JsonType {
 public:
     friend class JsonValue;
-    friend ostream& operator<<(ostream &os, JsonObject &rhs);
-    typedef std::map<string, JsonValue>::iterator iterator;
+    friend std::ostream& operator<<(std::ostream &os, JsonObject &rhs);
+    typedef std::map<std::string, JsonValue>::iterator iterator;
 public:
     explicit JsonObject(void);
     ~JsonObject(void);
@@ -141,7 +141,7 @@ public:
     virtual std::string to_string(void) override;
     
     // 查找元素
-    JsonObject::iterator find(const string &key);
+    JsonObject::iterator find(const std::string &key);
     // 删除元素
     int erase(const std::string &key);
     JsonObject::iterator erase(JsonObject::iterator &remove_iter);
@@ -156,21 +156,21 @@ public:
     bool operator==(const JsonObject& rhs) const;
     bool operator!=(const JsonObject& rhs) const;
     JsonObject& operator=(const JsonObject &rhs);
-    JsonValue& operator[](const string &key);
+    JsonValue& operator[](const std::string &key);
 
     // 迭代器
     iterator begin();
     iterator end();
 
 private:
-    map<string, JsonValue> value_;
+    std::map<std::string, JsonValue> value_;
 };
 
 // json 数组类型
 class JsonArray : public JsonType {
 public:
     friend class JsonValue;
-    friend ostream& operator<<(ostream &os, JsonArray &rhs);
+    friend std::ostream& operator<<(std::ostream &os, JsonArray &rhs);
     typedef std::vector<JsonValue>::iterator iterator;
 public:
     explicit JsonArray(void);
@@ -178,7 +178,7 @@ public:
 
     // 序列化和反序列化
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos) override;
-    virtual string to_string(void) override;
+    virtual std::string to_string(void) override;
 
     // 数组或是对象删除元素
     iterator erase(const int &index);
@@ -201,7 +201,7 @@ public:
     iterator begin();
     iterator end();
 private:
-    vector<JsonValue> value_;
+    std::vector<JsonValue> value_;
 };
 
 // json中转类型：可以安装当前存储的类型输出或是接收不同的类型
@@ -219,7 +219,7 @@ public:
     JsonValue(const bool &value);
     JsonValue(const int &value);
     JsonValue(const double &value);
-    JsonValue(const string &value);
+    JsonValue(const std::string &value);
     JsonValue(const char *value);
 
     ~JsonValue(void);
@@ -242,11 +242,11 @@ public:
     bool operator==(const JsonValue& rhs) const;
     bool operator!=(const JsonValue& rhs) const;
 
-    JsonValue& operator[](const string &key);
+    JsonValue& operator[](const std::string &key);
     JsonValue& operator[](const int &key);
 
     ValueType type(void) const {return type_;}
-    string to_string(void);
+    std::string to_string(void);
 
 public:
     void copy(const JsonValue &val, bool is_release = true);
@@ -267,12 +267,12 @@ public:
     // 解析保存在ByteBuffer的数据
     virtual int parse(const ByteBuffer &data);
     // 解析保存在string中的数据
-    virtual int parse(const string &data);
+    virtual int parse(const std::string &data);
 
     // 非格式化输出 json
-    virtual string to_string(void);
+    virtual std::string to_string(void);
     // 格式化输出 json
-    virtual string format_json(void);
+    virtual std::string format_json(void);
 
     // 构建成object
     void create_object(void);

@@ -3,7 +3,7 @@
 namespace basic {
 //////////////////////////////////////////////
 // 默认标准输出函数
-int output_to_stdout(const string &msg)
+int output_to_stdout(const std::string &msg)
 {
     std::cout << msg << std::endl;
 
@@ -11,7 +11,7 @@ int output_to_stdout(const string &msg)
 }
 
 // 默认标准出错函数
-int output_to_stderr(const string &msg)
+int output_to_stderr(const std::string &msg)
 {
     std::cerr << msg << std::endl;
 
@@ -19,10 +19,10 @@ int output_to_stderr(const string &msg)
 }
 
 // 设置颜色
-string 
-set_string_color(const string &str, StringColor color)
+std::string 
+set_string_color(const std::string &str, StringColor color)
 {
-    string output_str;
+    std::string output_str;
     switch (color)
     {
         case StringColor_Blue:
@@ -133,7 +133,7 @@ Logger::set_print_level(InfoLevel level)
 }
 
 void
-Logger::print_msg(InfoLevel level, int line, string file_name, string func, const char *format, ...)
+Logger::print_msg(InfoLevel level, int line, std::string file_name, std::string func, const char *format, ...)
 {
     if (level < print_level_) { // 低于 print_level 的将不会被输出
         return ;
@@ -160,7 +160,7 @@ Logger::print_msg(InfoLevel level, int line, string file_name, string func, cons
 
     msg_to_stream_callback output_callback = this->get_stream_func(level);
 
-    ostringstream ostr; // 输出到终端的是带有颜色设置的
+    std::ostringstream ostr; // 输出到终端的是带有颜色设置的
     if (output_callback == output_to_stderr || output_callback == output_to_stdout) {
         this->assemble_msg(ostr, tmp_msg, true);
     } else {
@@ -176,8 +176,8 @@ Logger::print_msg(InfoLevel level, int line, string file_name, string func, cons
     return ;
 }
 
-string 
-Logger::get_msg(InfoLevel level, int line, string file_name, string func, const char *format, ...)
+std::string 
+Logger::get_msg(InfoLevel level, int line, std::string file_name, std::string func, const char *format, ...)
 {
     char *msg_buff = new char[4096];
     memset(msg_buff, 0, 4096);
@@ -199,7 +199,7 @@ Logger::get_msg(InfoLevel level, int line, string file_name, string func, const 
     tmp_msg.which_line = line;
     tmp_msg.which_file = basename(file_name.c_str());
 
-    ostringstream ostr;
+    std::ostringstream ostr;
     this->assemble_msg(ostr, tmp_msg, false);
 
     delete[] msg_buff;
@@ -209,7 +209,7 @@ Logger::get_msg(InfoLevel level, int line, string file_name, string func, const 
 }
 
 void 
-Logger::assemble_msg(ostringstream &ostr, const MsgContent &msg, bool is_color_enable)
+Logger::assemble_msg(std::ostringstream &ostr, const MsgContent &msg, bool is_color_enable)
 {
     if (is_color_enable) {
         ostr << "\033[36m[" << msg.when << "]\033[0m";
@@ -237,7 +237,7 @@ Logger::assemble_msg(ostringstream &ostr, const MsgContent &msg, bool is_color_e
                 ostr <<  set_string_color(msg.msg_info, StringColor_Red);
                 break;
             default:
-                ostr << "Unknown Log Level" << endl;
+                ostr << "Unknown Log Level" << std::endl;
         }
     } else {
         ostr << "[" << msg.when << "]";
@@ -250,7 +250,7 @@ Logger::assemble_msg(ostringstream &ostr, const MsgContent &msg, bool is_color_e
     return ;
 }
 
-string 
+std::string 
 Logger::level_convert(enum InfoLevel level)
 {
     switch(level)
