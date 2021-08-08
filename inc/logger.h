@@ -49,10 +49,10 @@ enum StringColor {
 // 返回带颜色设置的字符串
 string set_string_color(const string &str, StringColor color);
 
-class MsgRecord {
+class Logger {
 public:
-    MsgRecord(void);
-    virtual ~MsgRecord(void);
+    Logger(void);
+    virtual ~Logger(void);
 
     // 设置打印的等级，超过设定level的才会被输出
     void set_print_level(InfoLevel level);
@@ -74,7 +74,7 @@ public:
 
 public:
     // 用于非类里面的全局输出
-    static MsgRecord g_log_msg;
+    static Logger g_log_msg;
 
 private:
     InfoLevel print_level_; // 设置输出等级， 低于该等级的将不会被输出 
@@ -97,19 +97,19 @@ private:
 #define LOG_FATAL(...)      this->print_msg(LOG_LEVEL_FATAL, __LINE__, __FILE__, __FUNCTION__, __VA_ARGS__)
 #define SET_CALLBACK(LEVEL, FUNC) this->set_stream_func(LEVEL, FUNC)
 
-#define GET_MSG(...)  this->get_msg(LOG_LEVEL_INFO, __LINE__, __FILE__, __FUNCTION__, __VA_ARGS__)
+#define GET_MSG(LEVEL, ...)  this->get_msg(LEVEL, __LINE__, __FILE__, __FUNCTION__, __VA_ARGS__)
 
 
-#define SET_GLOBAL_PRINT_LEVEL(x) MsgRecord::g_log_msg.set_print_level(x)
-#define LOG_GLOBAL_TRACE(...)  MsgRecord::g_log_msg.print_msg(LOG_LEVEL_TRACE, __LINE__, __FILE__, __FUNCTION__, __VA_ARGS__)
-#define LOG_GLOBAL_DEBUG(...)  MsgRecord::g_log_msg.print_msg(LOG_LEVEL_DEBUG, __LINE__, __FILE__, __FUNCTION__, __VA_ARGS__)
-#define LOG_GLOBAL_INFO(...)   MsgRecord::g_log_msg.print_msg(LOG_LEVEL_INFO, __LINE__, __FILE__, __FUNCTION__, __VA_ARGS__)
-#define LOG_GLOBAL_WARN(...)   MsgRecord::g_log_msg.print_msg(LOG_LEVEL_WARN, __LINE__, __FILE__, __FUNCTION__, __VA_ARGS__)
-#define LOG_GLOBAL_ERROR(...)  MsgRecord::g_log_msg.print_msg(LOG_LEVEL_ERROR, __LINE__, __FILE__, __FUNCTION__, __VA_ARGS__)
-#define LOG_GLOBAL_FATAL(...)  MsgRecord::g_log_msg.print_msg(LOG_LEVEL_FATAL, __LINE__, __FILE__, __FUNCTION__, __VA_ARGS__)
-#define SET_GLOBAL_CALLBACK(LEVEL, FUNC)  MsgRecord::g_log_msg.set_stream_func(LEVEL, FUNC)
+#define SET_GLOBAL_PRINT_LEVEL(x) Logger::g_log_msg.set_print_level(x)
+#define LOG_GLOBAL_TRACE(...)  Logger::g_log_msg.print_msg(LOG_LEVEL_TRACE, __LINE__, __FILE__, __FUNCTION__, __VA_ARGS__)
+#define LOG_GLOBAL_DEBUG(...)  Logger::g_log_msg.print_msg(LOG_LEVEL_DEBUG, __LINE__, __FILE__, __FUNCTION__, __VA_ARGS__)
+#define LOG_GLOBAL_INFO(...)   Logger::g_log_msg.print_msg(LOG_LEVEL_INFO, __LINE__, __FILE__, __FUNCTION__, __VA_ARGS__)
+#define LOG_GLOBAL_WARN(...)   Logger::g_log_msg.print_msg(LOG_LEVEL_WARN, __LINE__, __FILE__, __FUNCTION__, __VA_ARGS__)
+#define LOG_GLOBAL_ERROR(...)  Logger::g_log_msg.print_msg(LOG_LEVEL_ERROR, __LINE__, __FILE__, __FUNCTION__, __VA_ARGS__)
+#define LOG_GLOBAL_FATAL(...)  Logger::g_log_msg.print_msg(LOG_LEVEL_FATAL, __LINE__, __FILE__, __FUNCTION__, __VA_ARGS__)
+#define SET_GLOBAL_CALLBACK(LEVEL, FUNC)  Logger::g_log_msg.set_stream_func(LEVEL, FUNC)
 
-#define GLOBAL_GET_MSG(...)  MsgRecord::g_log_msg.get_msg(LOG_LEVEL_INFO, __LINE__, __FILE__, __FUNCTION__, __VA_ARGS__)
+#define GLOBAL_GET_MSG(LEVEL, ...)  Logger::g_log_msg.get_msg(LEVEL, __LINE__, __FILE__, __FUNCTION__, __VA_ARGS__)
 }
 
 #endif

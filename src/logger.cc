@@ -58,9 +58,9 @@ set_string_color(const string &str, StringColor color)
     return output_str;
 }
 
-MsgRecord MsgRecord::g_log_msg;
+Logger Logger::g_log_msg;
 
-MsgRecord::MsgRecord(void)
+Logger::Logger(void)
 : print_level_(LOG_LEVEL_LOW),
   msg_to_stream_trace_(output_to_stdout),
   msg_to_stream_debug_(output_to_stdout),
@@ -72,12 +72,12 @@ MsgRecord::MsgRecord(void)
 
 }
 
-MsgRecord::~MsgRecord(void)
+Logger::~Logger(void)
 {
 }
 
 void 
-MsgRecord::set_stream_func(InfoLevel level, msg_to_stream_callback func)
+Logger::set_stream_func(InfoLevel level, msg_to_stream_callback func)
 {
     switch (level) {
         case LOG_LEVEL_TRACE:
@@ -94,13 +94,13 @@ MsgRecord::set_stream_func(InfoLevel level, msg_to_stream_callback func)
             msg_to_stream_fatal_ = func; break;
         default: 
         {
-            output_to_stderr("MsgRecord::set_stream_func: Unknown option!");
+            output_to_stderr("Logger::set_stream_func: Unknown option!");
         } break;
     }
 }
 
 msg_to_stream_callback 
-MsgRecord::get_stream_func(InfoLevel level)
+Logger::get_stream_func(InfoLevel level)
 {
     switch (level) {
         case LOG_LEVEL_TRACE:
@@ -117,7 +117,7 @@ MsgRecord::get_stream_func(InfoLevel level)
             return msg_to_stream_fatal_;
         default: 
         {
-            output_to_stderr("MsgRecord::set_stream_func: Unknown option!");
+            output_to_stderr("Logger::set_stream_func: Unknown option!");
         } break;
     }
 
@@ -125,7 +125,7 @@ MsgRecord::get_stream_func(InfoLevel level)
 }
 
 void 
-MsgRecord::set_print_level(InfoLevel level)
+Logger::set_print_level(InfoLevel level)
 {
     print_level_ = level;
     
@@ -133,7 +133,7 @@ MsgRecord::set_print_level(InfoLevel level)
 }
 
 void
-MsgRecord::print_msg(InfoLevel level, int line, string file_name, string func, const char *format, ...)
+Logger::print_msg(InfoLevel level, int line, string file_name, string func, const char *format, ...)
 {
     if (level < print_level_) { // 低于 print_level 的将不会被输出
         return ;
@@ -170,14 +170,14 @@ MsgRecord::print_msg(InfoLevel level, int line, string file_name, string func, c
     if (output_callback != nullptr) {
         output_callback(ostr.str());
     } else {
-        output_to_stderr(set_string_color("MsgRecord ouput callback function is nullptr!", StringColor_Yellow));
+        output_to_stderr(set_string_color("Logger ouput callback function is nullptr!", StringColor_Yellow));
     }
     
     return ;
 }
 
 string 
-MsgRecord::get_msg(InfoLevel level, int line, string file_name, string func, const char *format, ...)
+Logger::get_msg(InfoLevel level, int line, string file_name, string func, const char *format, ...)
 {
     char *msg_buff = new char[4096];
     memset(msg_buff, 0, 4096);
@@ -209,7 +209,7 @@ MsgRecord::get_msg(InfoLevel level, int line, string file_name, string func, con
 }
 
 void 
-MsgRecord::assemble_msg(ostringstream &ostr, const MsgContent &msg, bool is_color_enable)
+Logger::assemble_msg(ostringstream &ostr, const MsgContent &msg, bool is_color_enable)
 {
     if (is_color_enable) {
         ostr << "\033[36m[" << msg.when << "]\033[0m";
@@ -251,7 +251,7 @@ MsgRecord::assemble_msg(ostringstream &ostr, const MsgContent &msg, bool is_colo
 }
 
 string 
-MsgRecord::level_convert(enum InfoLevel level)
+Logger::level_convert(enum InfoLevel level)
 {
     switch(level)
     {

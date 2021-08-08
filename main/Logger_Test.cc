@@ -2,7 +2,7 @@
 
 using namespace basic;
 
-class MsgTest : public MsgRecord {
+class MsgTest : public Logger {
 public:
     MsgTest()
     {

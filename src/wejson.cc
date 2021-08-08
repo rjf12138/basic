@@ -108,7 +108,7 @@ JsonNumber::parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &j
 
     if (iter != json_end_pos && *iter == '0') {
         if (isdigit(*(iter+1))) { // 除了小数和数值0之外，零不能作为第一个数
-            throw runtime_error(GLOBAL_GET_MSG("Zero can't be first number of integer!"));
+            throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR, "Zero can't be first number of integer!"));
         }
     }
 
@@ -230,7 +230,7 @@ JsonBool::parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &jso
     } else if (str == "false") {
         value_ = false;
     } else {
-        throw runtime_error(GLOBAL_GET_MSG("Expected true or false, but result is %s", str.c_str()));
+        throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR,"Expected true or false, but result is %s", str.c_str()));
     }
 
     return iter;
@@ -306,7 +306,7 @@ JsonNull::parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &jso
     if (str == "null") {
         value_ = str;
     } else {
-        throw runtime_error(GLOBAL_GET_MSG("Expected null, but result is %s", str.c_str()));
+        throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR,"Expected null, but result is %s", str.c_str()));
     }
 
 
@@ -376,7 +376,7 @@ JsonString::parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &j
     
     if (iter == json_end_pos) // 因为字符解析是以'"'为结尾的，所以当遇到Buffer结尾时说明字符不是以'"'结尾的
     {
-        throw runtime_error(GLOBAL_GET_MSG("String need to surround by \"\""));
+        throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR,"String need to surround by \"\""));
     }
     value_ = str;
     ++iter; //  iter 指向下一个字符
@@ -449,7 +449,7 @@ JsonObject::parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &j
         ValueType ret_value_type = this->check_value_type(iter);
         if (ret_value_type == JSON_UNKNOWN_TYPE) {
             if (*iter != ',' && *iter != ':' && *iter != ']') {
-                throw runtime_error( GLOBAL_GET_MSG("Unknown character in object: %c", *iter));
+                throw runtime_error( GLOBAL_GET_MSG(LOG_LEVEL_ERROR,"Unknown character in object: %c", *iter));
             }
             continue;
         }
@@ -508,7 +508,7 @@ JsonObject::parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &j
         if (value_.find(value_name) == value_.end()) {
             value_[value_name] = vtc;
         } else {
-            throw runtime_error(GLOBAL_GET_MSG("The \"%s\" is already exists.", value_name.c_str()));
+            throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR,"The \"%s\" is already exists.", value_name.c_str()));
         }
         flag = false;
         if (*iter == '}') { // 有些解析完就直接指向'}'， 如果不退出在回到循环会因值自增错过
@@ -631,7 +631,7 @@ JsonValue&
 JsonObject::operator[](const string &key)
 {
     if (value_.find(key) == value_.end()) {
-        throw runtime_error(GLOBAL_GET_MSG("JsonObject: out of range.[key: %s]", key.c_str()));
+        throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR,"JsonObject: out of range.[key: %s]", key.c_str()));
     }
     return value_[key];
 }
@@ -672,7 +672,7 @@ JsonArray::parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &js
         ValueType ret_value_type = this->check_value_type(iter);
         if (ret_value_type == JSON_UNKNOWN_TYPE) {
             if (*iter != ',') {
-                throw runtime_error(GLOBAL_GET_MSG("Unknown character in array: %c", *iter));
+                throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR,"Unknown character in array: %c", *iter));
             }
             continue;
         }
@@ -725,7 +725,7 @@ JsonArray::parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &js
         }
     }
     if (iter == json_end_pos) {
-        throw runtime_error(GLOBAL_GET_MSG("Array need to surround by []"));
+        throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR,"Array need to surround by []"));
     }
     ++iter;
     return iter;
@@ -800,7 +800,7 @@ JsonValue&
 JsonArray::operator[](size_t key)
 {
     if (key < 0 || key >= value_.size()) {
-        throw runtime_error(GLOBAL_GET_MSG("JsonArray: out of range[index: %d]", key));
+        throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR,"JsonArray: out of range[index: %d]", key));
     }
 
     return value_[key];
@@ -947,7 +947,7 @@ JsonValue::operator JsonBool()
     if (type_ == JSON_BOOL_TYPE) {
         return *(dynamic_cast<JsonBool*>(value_));
     } else {
-        throw runtime_error(GLOBAL_GET_MSG("value cast failed: current type is not a bool. [type: %s]", JsonType::value_type_to_string(type_)));
+        throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR,"value cast failed: current type is not a bool. [type: %s]", JsonType::value_type_to_string(type_)));
     }
 }
 
@@ -956,7 +956,7 @@ JsonValue::operator JsonNumber()
     if (type_ == JSON_NUMBER_TYPE) {
         return *(dynamic_cast<JsonNumber*>(value_));
     } else {
-        throw runtime_error(GLOBAL_GET_MSG("value cast failed: current type is not number. [type: %s]", JsonType::value_type_to_string(type_)));
+        throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR,"value cast failed: current type is not number. [type: %s]", JsonType::value_type_to_string(type_)));
     }
 }
 JsonValue::operator JsonString()
@@ -964,7 +964,7 @@ JsonValue::operator JsonString()
     if (type_ == JSON_STRING_TYPE) {
         return *(dynamic_cast<JsonString*>(value_));
     } else {
-        throw runtime_error(GLOBAL_GET_MSG("value cast failed: current type is not string. [type: %s]", JsonType::value_type_to_string(type_)));
+        throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR,"value cast failed: current type is not string. [type: %s]", JsonType::value_type_to_string(type_)));
     }
 }
 
@@ -973,7 +973,7 @@ JsonValue::operator JsonObject()
     if (type_ == JSON_OBJECT_TYPE) {
         return *(dynamic_cast<JsonObject*>(value_));
     } else {
-        throw runtime_error(GLOBAL_GET_MSG("value cast failed: current type is not object. [type: %s]", JsonType::value_type_to_string(type_)));
+        throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR,"value cast failed: current type is not object. [type: %s]", JsonType::value_type_to_string(type_)));
     }
 }
 JsonValue::operator JsonArray()
@@ -981,7 +981,7 @@ JsonValue::operator JsonArray()
     if (type_ == JSON_ARRAY_TYPE) {
         return *(dynamic_cast<JsonArray*>(value_));
     } else {
-        throw runtime_error(GLOBAL_GET_MSG("value cast failed: current type is not array. [type: %s]", JsonType::value_type_to_string(type_)));
+        throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR,"value cast failed: current type is not array. [type: %s]", JsonType::value_type_to_string(type_)));
     }
 }
 
@@ -990,7 +990,7 @@ JsonValue::operator JsonNull()
     if (type_ == JSON_NULL_TYPE) {
         return *(dynamic_cast<JsonNull*>(value_));
     } else {
-        throw runtime_error(GLOBAL_GET_MSG("value cast failed: current type is not null. [type: %s]", JsonType::value_type_to_string(type_)));
+        throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR,"value cast failed: current type is not null. [type: %s]", JsonType::value_type_to_string(type_)));
     }
 }
 
@@ -1100,7 +1100,7 @@ JsonValue::operator[](const string &key)
         return (*dynamic_cast<JsonObject*>(value_))[key];
     }
 
-    throw runtime_error(GLOBAL_GET_MSG("JsonValue::operator[%s]: out of range.", key.c_str()));
+    throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR,"JsonValue::operator[%s]: out of range.", key.c_str()));
 }
 
 JsonValue& 
@@ -1110,7 +1110,7 @@ JsonValue::operator[](const int &key)
         return (*dynamic_cast<JsonArray*>(value_))[key];
     }
 
-    throw runtime_error(GLOBAL_GET_MSG("JsonValue::operator[%d]: out of range.", key));
+    throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR,"JsonValue::operator[%d]: out of range.", key));
 }
 
 void JsonValue::copy(const JsonValue &val, bool is_release)
@@ -1223,7 +1223,7 @@ JsonObject&
 WeJson::get_object(void)
 {
     if (type_ != JSON_OBJECT_TYPE) {
-        throw runtime_error(GLOBAL_GET_MSG("get object failed: current type is not a object. [type: %s]", JsonType::value_type_to_string(type_)));
+        throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR,"get object failed: current type is not a object. [type: %s]", JsonType::value_type_to_string(type_)));
     }
     return *dynamic_cast<JsonObject*>(value_);
 }
@@ -1232,7 +1232,7 @@ JsonArray&
 WeJson::get_array(void)
 {
     if (type_ != JSON_ARRAY_TYPE) {
-        throw runtime_error(GLOBAL_GET_MSG("get array failed: current type is not a array. [type: %s]", JsonType::value_type_to_string(type_)));
+        throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR,"get array failed: current type is not a array. [type: %s]", JsonType::value_type_to_string(type_)));
     }
     return *dynamic_cast<JsonArray*>(value_);
 }
@@ -1258,7 +1258,7 @@ WeJson::parse(const ByteBuffer &buff)
     }
 
     if (start_pos == buff.end()) {
-        throw runtime_error(GLOBAL_GET_MSG("Can't find any json text!"));
+        throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR,"Can't find any json text!"));
     }
 
     bool quotation_marks = false;
@@ -1330,7 +1330,7 @@ WeJson::parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_
         return dynamic_cast<JsonObject*>(value_)->parse(value_start_pos, json_end_pos);
     }
     default:
-        string err_str = GLOBAL_GET_MSG("Unknown json type (object or array). [type: %s]", JsonType::value_type_to_string(type_));
+        string err_str = GLOBAL_GET_MSG(LOG_LEVEL_ERROR,"Unknown json type (object or array). [type: %s]", JsonType::value_type_to_string(type_));
         break;
     }
 

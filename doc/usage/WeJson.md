@@ -78,10 +78,8 @@ string to_string(void) override;
 
 // 获取double类型数据
 double to_double(void)；
-// 获取int类型数据，会丢失精度
+// 获取int类型数据，如果是浮点数会丢失精度
 int to_int(void)；
-// 支持与 double 类型转换
-operator double()；
 
 // 比较
 bool operator==(const JsonNumber& rhs) const;

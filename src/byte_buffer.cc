@@ -528,9 +528,7 @@ ByteBuffer::operator[](ssize_t index)
 {
     ssize_t size = this->data_size();
     if (size <= 0 || index >= size) {
-        ostringstream ostr;
-        ostr << "Line: " << __LINE__ << " out of range.";
-        throw runtime_error(ostr.str());
+        throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR, "Out of range.[index: %d]", index));
     }
 
     index = (this->start_read_pos_ + index) %  max_buffer_size_;
@@ -543,9 +541,7 @@ ByteBuffer::operator[](const ssize_t &index) const
 {
     ssize_t size = this->data_size();
     if (size <= 0 || index >= size) {
-        ostringstream ostr;
-        ostr << "Line: " << __LINE__ << " out of range.";
-        throw runtime_error(ostr.str());
+        throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR, "Out of range.[index: %d]", index));
     }
 
     ssize_t new_index = (this->start_read_pos_ + index) %  max_buffer_size_;
@@ -892,7 +888,7 @@ bufftype
 ByteBufferIterator::operator*()
 {
     if (this->check_iterator() == false) {
-        throw runtime_error(GLOBAL_GET_MSG("Msg: out of range. Info:\n%s", this->debug_info().c_str()));
+        throw runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR, "Msg: out of range. Info:\n%s", this->debug_info().c_str()));
     }
     return buff_->buffer_[curr_pos_];
 }
