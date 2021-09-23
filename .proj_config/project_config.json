@@ -34,7 +34,7 @@
 			"gtest",
 			"pthread"
 		]
-	},"MainFileName": "Logger_Test.cc",
+	},"MainFileName": "ByteBuffer_Test.cc",
 	"Name": "basic",
 	"Path": "/home/ruanjian/workspace/project_v/basic",
 	"ProgramRunArgs": "",

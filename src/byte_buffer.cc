@@ -408,12 +408,15 @@ ssize_t ByteBuffer::write_bytes(const void *buf, ssize_t buf_size)
 ssize_t
 ByteBuffer::get_data(ByteBuffer &out, ByteBufferIterator &copy_start, ssize_t copy_size)
 {
-    out.clear();
     if (this->buffer_ == nullptr || copy_size <= 0) {
         return 0;
     }
 
     if (copy_start.buff_->buffer_ != this->buffer_) {
+        return 0;
+    }
+
+    if (copy_start == end()) {
         return 0;
     }
 
