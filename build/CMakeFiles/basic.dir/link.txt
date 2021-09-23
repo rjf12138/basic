@@ -1,2 +1,0 @@
-/usr/bin/ar qc libbasicd.a  CMakeFiles/basic.dir/src/logger.cc.o CMakeFiles/basic.dir/src/byte_buffer.cc.o CMakeFiles/basic.dir/src/wejson.cc.o
-/usr/bin/ranlib libbasicd.a
