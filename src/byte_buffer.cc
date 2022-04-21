@@ -736,30 +736,24 @@ ByteBuffer::replace(ByteBuffer buf1, const ByteBuffer &buf2, ssize_t index)
         return *this;
     }
 
-    if (index < 0 || index >= (ssize_t)find_buff.size()) { // 替换所有
-        for (std::size_t i = 0; i < find_buff.size(); ++i) {
-            copy_size = find_buff[i] - copy_pos_iter;
-            if (copy_size > 0) {
-                this->get_data(tmp, copy_pos_iter, copy_size);
-                result = result + tmp;
-                result = result + buf2;
-                copy_pos_iter = find_buff[i] + buf1.data_size();
-            }
+    if (index >= find_buff.size() || index < 0) {
+        return *this;
+    }
+    std::cout << "find_buff_size: " << find_buff.size() << std::endl;
+    for (std::size_t i = index; i < find_buff.size(); ++i) {
+        copy_size = find_buff[i] - copy_pos_iter;
+        if (copy_size > 0) {
+            this->get_data(tmp, copy_pos_iter, copy_size);
+            result += tmp;
+            result += buf2;
+            copy_pos_iter = find_buff[i] + buf1.data_size();
         }
+    }
 
-        copy_size = this->end() - copy_pos_iter; // 保存剩余的字符
-        if (copy_size > 0) {
-            this->get_data(tmp, copy_pos_iter, copy_size);
-            result = result + tmp;
-        }
-    } else {
-        copy_size = find_buff[index] - copy_pos_iter;
-        if (copy_size > 0) {
-            this->get_data(tmp, copy_pos_iter, copy_size);
-            result = result + tmp;
-            result = result + buf2;
-            copy_pos_iter = find_buff[index] + buf1.data_size();
-        }
+    copy_size = this->end() - copy_pos_iter; // 保存剩余的字符
+    if (copy_size > 0) {
+        this->get_data(tmp, copy_pos_iter, copy_size);
+        result += tmp;
     }
 
     return result;

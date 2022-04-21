@@ -96,7 +96,8 @@ public:
     std::vector<ByteBuffer> split(const ByteBuffer &buff);
 
     // 将 Bytebuffer 中 buf1 替换为 buf2
-    ByteBuffer replace(ByteBuffer buf1, const ByteBuffer &buf2, ssize_t index = -1);
+    // index 指定第几个匹配的子串， index 超出范围时，替换所有匹配子串, index 从0 开始计数
+    ByteBuffer replace(ByteBuffer buf1, const ByteBuffer &buf2, ssize_t index = 0);
 
     // 移除 ByteBuff 中匹配 buff 的子串
     // index 指定第几个匹配的子串， index 超出范围时，删除所有匹配子串, index 从0 开始计数
