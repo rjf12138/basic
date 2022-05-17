@@ -1,5 +1,6 @@
 #include "byte_buffer.h"
 #include "logger.h"
+#include "debug.h"
 
 namespace basic {
 
@@ -530,6 +531,7 @@ ByteBuffer::operator[](ssize_t index)
 {
     ssize_t size = this->data_size();
     if (size <= 0 || index >= size) {
+        dump_stack();
         throw std::runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR, "Out of range.[index: %d]", index));
     }
 
@@ -543,6 +545,7 @@ ByteBuffer::operator[](const ssize_t &index) const
 {
     ssize_t size = this->data_size();
     if (size <= 0 || index >= size) {
+        dump_stack();
         throw std::runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR, "Out of range.[index: %d]", index));
     }
 
@@ -884,6 +887,7 @@ bufftype
 ByteBufferIterator::operator*()
 {
     if (this->check_iterator() == false) {
+        dump_stack();
         throw std::runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR, "Msg: out of range. Info:\n%s", this->debug_info().c_str()));
     }
     return buff_->buffer_[curr_pos_];

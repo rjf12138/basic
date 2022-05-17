@@ -5,11 +5,11 @@
 	"ChooseCompiler": [
 		{
 			"CompilerName": "g++",
-			"DebugOption": "-O0 -Wall -g -ggdb -std=c++11",
+			"DebugOption": "-O0 -Wall -g -rdynamic -ggdb -std=c++11",
 			"ReleaseOption": "-O2 -Wall -std=c++11"
 		}
 	],"CompilationMethod": "debug",
-	"CompilationParameters": "-O0 -Wall -g -ggdb -std=c++11",
+	"CompilationParameters": "-O0 -Wall -g -rdynamic -ggdb -std=c++11",
 	"CurrentCompiler": "g++",
 	"ExportFile": [
 		"gtest"
