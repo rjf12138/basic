@@ -95,7 +95,7 @@ ssize_t ByteBuffer::clear(void)
     return 0;
 }
 
-ssize_t ByteBuffer::set_extern_buffer(buffptr exbuf, int buff_size)
+ssize_t ByteBuffer::set_extern_buffer(buffptr exbuf, ssize_t buff_size)
 {
     if (exbuf == nullptr || buff_size <= 0) {
         return 0;
@@ -223,7 +223,7 @@ ssize_t ByteBuffer::copy_data_to_buffer(const void *data, ssize_t size)
     }
 
     if (this->idle_size() <= size) {
-        int ret = this->resize(max_buffer_size_ + size);
+        ssize_t ret = this->resize(max_buffer_size_ + size);
         if (ret == -1) {
            return 0;
         }
@@ -235,7 +235,7 @@ ssize_t ByteBuffer::copy_data_to_buffer(const void *data, ssize_t size)
     // }
 
     ssize_t copy_size = size;
-    buffptr data_ptr = (buffptr)data;
+    buffptr data_ptr = reinterpret_cast<buffptr>(const_cast<void*>(data));
     
     // 检查buff数组后面是否有连续的内存可以写
     while (true)
@@ -663,9 +663,9 @@ ByteBuffer::find(const ByteBuffer &patten)
     }
 
     int patten_index = 0;
-    for (int i = 0; i < this->data_size(); ++i) {
+    for (ssize_t i = 0; i < this->data_size(); ++i) {
         if (patten[patten_index] == (*this)[i]) {
-            for (int j = i; j < this->data_size();) {
+            for (ssize_t j = i; j < this->data_size();) {
                 if (patten_index < patten.data_size() && patten[patten_index] == (*this)[j]) {
                     ++patten_index;
                     ++j;
@@ -710,6 +710,7 @@ ByteBuffer::split(const ByteBuffer &buff)
         }
 
         result.push_back(tmp);
+        tmp.clear();
     }
 
     copy_size = (this->end() - start_copy_pos); // 保存剩余的字符
@@ -739,10 +740,10 @@ ByteBuffer::replace(ByteBuffer buf1, const ByteBuffer &buf2, ssize_t index)
         return *this;
     }
 
-    if (index >= find_buff.size() || index < 0) {
+    if (index >= static_cast<ssize_t>(find_buff.size()) || index < 0) {
         return *this;
     }
-    std::cout << "find_buff_size: " << find_buff.size() << std::endl;
+    
     for (std::size_t i = index; i < find_buff.size(); ++i) {
         copy_size = find_buff[i] - copy_pos_iter;
         if (copy_size > 0) {
@@ -772,7 +773,7 @@ ByteBuffer::remove(const ByteBuffer &buff, ssize_t index)
     
     ByteBuffer tmp_buf;
     std::vector<ByteBufferIterator> find_buff = this->find(buff);
-    if (index < 0 || index >= (ssize_t)find_buff.size()) {
+    if (index < 0 || index >= static_cast<ssize_t>(find_buff.size())) {
         index = -1;
     }
 

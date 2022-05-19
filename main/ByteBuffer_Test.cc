@@ -119,10 +119,10 @@ TEST_F(ByteBuffer_Test, ByteBuff_none_lock_read_write)
     std::string str = "Hello, world";
     for (int i = 0; i < test_cnt; ++i) {
         ASSERT_EQ(buff.data_size(), 0);
-        ASSERT_EQ((std::size_t)buff.write_string(str), str.length());
-        ASSERT_EQ((std::size_t)buff.data_size(), str.length());
+        ASSERT_EQ(static_cast<std::size_t>(buff.write_string(str)), str.length());
+        ASSERT_EQ(static_cast<std::size_t>(buff.data_size()), str.length());
         std::string val_str;
-        ASSERT_EQ((std::size_t)buff.read_string(val_str), str.length());
+        ASSERT_EQ(static_cast<std::size_t>(buff.read_string(val_str)), str.length());
         ASSERT_EQ(buff.data_size(), 0);
         ASSERT_EQ(val_str, str);
     }
@@ -130,10 +130,10 @@ TEST_F(ByteBuffer_Test, ByteBuff_none_lock_read_write)
     struct test_stru stru = {'b', 12345, "Nice to meet you", "hello"};
     for (int i = 0; i < test_cnt; ++i) {
         ASSERT_EQ(buff.data_size(), 0);
-        ASSERT_EQ((std::size_t)buff.write_bytes((void*)&stru, sizeof(stru)) , sizeof(stru));
-        ASSERT_EQ((std::size_t)buff.data_size(), sizeof(stru));
+        ASSERT_EQ(static_cast<std::size_t>(buff.write_bytes((reinterpret_cast<void*>(&stru)), sizeof(stru))) , sizeof(stru));
+        ASSERT_EQ(static_cast<std::size_t>(buff.data_size()), sizeof(stru));
         struct test_stru val_stru;
-        ASSERT_EQ((std::size_t)buff.read_bytes(&val_stru, sizeof(stru)), sizeof(stru));
+        ASSERT_EQ(static_cast<std::size_t>(buff.read_bytes(&val_stru, sizeof(stru))), sizeof(stru));
         ASSERT_EQ(buff.data_size(), 0);
         ASSERT_EQ(val_stru.i8, stru.i8);
         ASSERT_EQ(val_stru.i16, stru.i16);
@@ -408,8 +408,8 @@ TEST_F(ByteBuffer_Test, boundary_test)
     ASSERT_GE(buff.idle_size(), 0);
 
     test_stru test;
-    buff.write_bytes((void*)&test, sizeof(test));
-    ASSERT_EQ((std::size_t)buff.data_size(), sizeof(test));
+    buff.write_bytes(reinterpret_cast<void*>(&test), sizeof(test));
+    ASSERT_EQ(static_cast<std::size_t>(buff.data_size()), sizeof(test));
     ASSERT_EQ(buff.empty(), false);
     
     buff.clear();
@@ -423,7 +423,7 @@ TEST_F(ByteBuffer_Test, copy_test)
     int start_size = 1000, end_size = 10000;
     for (int i = start_size;i < end_size; i += 100) {
         for (int j = 0;j < i; ++j) {
-            src.write_int8(j % 256);
+            src.write_int8(static_cast<int8_t>(j % 256));
         }
         dest = src;
         ASSERT_EQ(src, dest);
@@ -451,7 +451,7 @@ TEST_F(ByteBuffer_Test, iterator)
     size_t read_cnt = 0;
     bool choose_read_str = false;
     ByteBuffer::iterator iter = buff.begin();
-    for (size_t i = 0; i < (size_t)buff.data_size(); ++i) {
+    for (size_t i = 0; i < static_cast<size_t>(buff.data_size()); ++i) {
         if (choose_read_str == false) {
             ASSERT_EQ(*(iter + i), str[read_cnt]);
             read_cnt++;
@@ -472,7 +472,7 @@ TEST_F(ByteBuffer_Test, iterator)
     std::string read_str;
     read_cnt = str.length();
     choose_read_str = false;
-    for (auto iter = buff.begin(); iter != buff.end(); ++iter) {
+    for (iter = buff.begin(); iter != buff.end(); ++iter) {
         read_str += *iter;
         read_cnt--;
         if (read_cnt == 0) {
@@ -495,7 +495,7 @@ TEST_F(ByteBuffer_Test, iterator)
     for (int i = 0;i < 36000; ++i) {
         read_str = "";
         buff.write_string(str);
-        for (auto iter = buff.begin(); iter != buff.end(); ++iter) {
+        for (iter = buff.begin(); iter != buff.end(); ++iter) {
             read_str += *iter;
         }
         ASSERT_EQ(str, read_str);
@@ -557,11 +557,11 @@ TEST_F(ByteBuffer_Test, iterator)
         buff.write_string(str);
         iter1 = buff.begin();
         iter2 = buff.end();
-        for (int i = buff.data_size(); i > 0; --i) {
-            auto tmp_iter1 = iter2 - i;
-            auto tmp_iter2 = iter1 + (buff.data_size() - i);
+        for (ssize_t j = buff.data_size(); j > 0; --j) {
+            auto tmp_iter1 = iter2 - static_cast<int>(j);
+            auto tmp_iter2 = iter1 + (buff.data_size() - j);
             ASSERT_EQ(*tmp_iter1, *tmp_iter2);
-            ASSERT_EQ(str[buff.data_size() - i], *tmp_iter1);
+            ASSERT_EQ(str[buff.data_size() - j], *tmp_iter1);
         }
         buff.read_string(read_str);
     }
@@ -573,7 +573,7 @@ TEST_F(ByteBuffer_Test, iterator)
         buff.write_string(str);
         iter1 = buff.begin();
         iter2 = buff.end();
-        for (int i = buff.data_size(); i > 0; --i) {
+        for (ssize_t i = buff.data_size(); i > 0; --i) {
             ssize_t dis1 = iter2 - iter1;
             ssize_t dis2 = iter1 - iter2;
             ++iter1;
@@ -583,7 +583,7 @@ TEST_F(ByteBuffer_Test, iterator)
 
         iter1 = buff.begin();
         iter2 = buff.end();
-        for (int i = buff.data_size(); i > 0; --i) {
+        for (ssize_t i = buff.data_size(); i > 0; --i) {
             ssize_t dis1 = iter2 - iter1;
             ssize_t dis2 = iter1 - iter2;
             --iter2;
@@ -594,7 +594,7 @@ TEST_F(ByteBuffer_Test, iterator)
     }
 }
 
-#define RANDOM_RANGE 256)
+#define RANDOM_RANGE 256
 //#define RANDOM_RANGE (('z' - 'a')) + 'a')
 TEST_F(ByteBuffer_Test, operate_buffer)
 {
@@ -636,17 +636,17 @@ TEST_F(ByteBuffer_Test, operate_buffer)
 
         ByteBuffer patten, src, replace_str;
         for (int j = 0;j < patten_len; ++j) {
-            bufftype value = (rand() % RANDOM_RANGE;
+            bufftype value = static_cast<bufftype>(rand() % RANDOM_RANGE);
             patten.write_int8(value);
         }
 
         for (int j = 0;j < src_len; ++j) {
-            bufftype value = (rand() % RANDOM_RANGE;
+            bufftype value = static_cast<bufftype>(rand() % RANDOM_RANGE);
             src.write_int8(value);
         }
 
         for (int j = 0;j < replace_len; ++j) {
-            bufftype value = (rand() % RANDOM_RANGE;
+            bufftype value = static_cast<bufftype>(rand() % RANDOM_RANGE);
             replace_str.write_int8(value);
         }
 

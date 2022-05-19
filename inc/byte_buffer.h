@@ -112,7 +112,7 @@ public:
 
 private:
     // 设置外部缓存
-    ssize_t set_extern_buffer(buffptr exbuf, int buff_size);
+    ssize_t set_extern_buffer(buffptr exbuf, ssize_t buff_size);
     // 下一个读的位置
     void next_read_pos(int offset = 1);
     // 下一个写的位置

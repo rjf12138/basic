@@ -12,7 +12,7 @@ void random_str(int setlen, ByteBuffer &buff1, ByteBuffer &buff2)
     buff1.write_int8('"');
 
     for (int i = 0; i < length - 1; ++i) {
-        int8_t ch = rand() % 256;
+        int8_t ch = static_cast<int8_t>(rand() % 256);
         
         if (ch == 0) {
             buff1.write_int8('0');
@@ -137,8 +137,8 @@ TEST_F(WeJson_Test, NUMBER_TEST)
 {
     JsonNumber json_number_test_1(1.1214);
     JsonNumber json_number_test_2(12);
-    JsonNumber json_number_test_3(json_number_test_1);
-    JsonNumber json_number_test_4(json_number_test_2);
+    JsonNumber json_number_test_3(json_number_test_1.to_double());
+    JsonNumber json_number_test_4(json_number_test_2.to_double());
 
     ASSERT_EQ(json_number_test_1.to_string(), "1.1214");
     ASSERT_EQ(json_number_test_2.to_string(), "12");

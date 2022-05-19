@@ -2,5 +2,5 @@
 #include <execinfo.h>
 
 namespace basic {
-extern void dump_stack(void);
+extern std::string dump_stack(void);
 }
