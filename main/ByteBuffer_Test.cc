@@ -635,12 +635,12 @@ TEST_F(ByteBuffer_Test, operate_buffer)
         int replace_len = rand() % max_str_len;
 
         ByteBuffer patten, src, replace_str;
-        for (int j = 0;j < patten_len; ++j) {
+        for (int j = 0; j < patten_len; ++j) {
             bufftype value = static_cast<bufftype>(rand() % RANDOM_RANGE);
             patten.write_int8(value);
         }
 
-        for (int j = 0;j < src_len; ++j) {
+        for (int j = 0; j < src_len; ++j) {
             bufftype value = static_cast<bufftype>(rand() % RANDOM_RANGE);
             src.write_int8(value);
         }

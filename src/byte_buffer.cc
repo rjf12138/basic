@@ -705,12 +705,10 @@ ByteBuffer::split(const ByteBuffer &buff)
         this->get_data(tmp, start_copy_pos, copy_size);
         start_copy_pos = find_buff[i] + buff.data_size();
         
-        if (tmp.data_size() <= 0) {
-            continue;
+        if (tmp.data_size() > 0) {
+            result.push_back(tmp);
+            tmp.clear();
         }
-
-        result.push_back(tmp);
-        tmp.clear();
     }
 
     copy_size = (this->end() - start_copy_pos); // 保存剩余的字符
@@ -718,6 +716,7 @@ ByteBuffer::split(const ByteBuffer &buff)
         this->get_data(tmp, start_copy_pos, copy_size);
         if (tmp.data_size() > 0) {
             result.push_back(tmp);
+            tmp.clear();
         }
     }
 
@@ -751,6 +750,7 @@ ByteBuffer::replace(ByteBuffer buf1, const ByteBuffer &buf2, ssize_t index)
             result += tmp;
             result += buf2;
             copy_pos_iter = find_buff[i] + buf1.data_size();
+            tmp.clear();
         }
     }
 
@@ -758,6 +758,7 @@ ByteBuffer::replace(ByteBuffer buf1, const ByteBuffer &buf2, ssize_t index)
     if (copy_size > 0) {
         this->get_data(tmp, copy_pos_iter, copy_size);
         result += tmp;
+        tmp.clear();
     }
 
     return result;
