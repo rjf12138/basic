@@ -531,8 +531,8 @@ ByteBuffer::operator[](ssize_t index)
 {
     ssize_t size = this->data_size();
     if (size <= 0 || index >= size) {
-        dump_stack();
-        throw std::runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR, "Out of range.[index: %d]", index));
+        ;
+        throw std::runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR, "Out of range.[index: %d]\n%s\n", index, dump_stack().c_str()));
     }
 
     index = (this->start_read_pos_ + index) %  max_buffer_size_;
@@ -545,8 +545,7 @@ ByteBuffer::operator[](const ssize_t &index) const
 {
     ssize_t size = this->data_size();
     if (size <= 0 || index >= size) {
-        dump_stack();
-        throw std::runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR, "Out of range.[index: %d]", index));
+        throw std::runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR, "Out of range.[index: %d]\n%s\n", index, dump_stack()));
     }
 
     ssize_t new_index = (this->start_read_pos_ + index) %  max_buffer_size_;
@@ -889,8 +888,7 @@ bufftype
 ByteBufferIterator::operator*()
 {
     if (this->check_iterator() == false) {
-        dump_stack();
-        throw std::runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR, "Msg: out of range. Info:\n%s", this->debug_info().c_str()));
+        throw std::runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR, "Msg: out of range. Info:\n%s\n%s\n", this->debug_info().c_str(), dump_stack()));
     }
     return buff_->buffer_[curr_pos_];
 }
