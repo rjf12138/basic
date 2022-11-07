@@ -888,7 +888,7 @@ bufftype
 ByteBufferIterator::operator*()
 {
     if (this->check_iterator() == false) {
-        throw std::runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR, "Msg: out of range. Info:\n%s\n%s\n", this->debug_info().c_str(), dump_stack()));
+        throw std::runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR, "Msg: out of range. Info:\n%s\n%s\n", this->debug_info().c_str(), dump_stack().c_str()));
     }
     return buff_->buffer_[curr_pos_];
 }
