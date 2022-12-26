@@ -57,6 +57,10 @@
         "set": "cpp",
         "iomanip": "cpp",
         "iostream": "cpp",
-        "csignal": "cpp"
+        "csignal": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "numbers": "cpp",
+        "cinttypes": "cpp"
     }
 }

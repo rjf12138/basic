@@ -449,6 +449,7 @@ JsonObject::~JsonObject(void) {}
 ByteBuffer::iterator 
 JsonObject::parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos)
 {
+    value_.clear();
     ByteBuffer::iterator iter = value_start_pos;
     ++iter; // 由指向'{'改到指向第一个键值对
 
@@ -677,6 +678,7 @@ JsonArray::~JsonArray(void){}
 ByteBuffer::iterator 
 JsonArray::parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos)
 {
+    value_.clear();
     ByteBuffer::iterator iter = value_start_pos;
     ++iter;
 
