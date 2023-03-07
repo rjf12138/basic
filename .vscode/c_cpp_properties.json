@@ -4,7 +4,8 @@
             "name": "Linux",
             "includePath": [
                 "${default}",
-                "${workspaceFolder}/inc"
+                "${workspaceFolder}/inc",
+                "${workspaceFolder}/extern_inc"
             ],
             "compilerPath": "/usr/bin/g++",
             "cStandard": "c11",
