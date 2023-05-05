@@ -15,7 +15,7 @@ public:
     virtual ~ErrHandle(void);
 
     // 设置错误码
-    void set_err_code(int err_code, void* data, const std::string &str_error = "");
+    void set_err_code(int err_code, void* data = nullptr, const std::string &str_error = "");
 
     // 获取最新的错误码
     int new_errno(void);
