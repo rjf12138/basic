@@ -353,7 +353,19 @@ TEST_F(WeJson_Test, ObjectArrayTest)
     // std::cout << arr1.format_json() << std::endl;
 
     WeJson data("{\"arr\":[\"Hello\",123,false,null,{\"bool\":false,\"int\":123,\"null\":null,\"str\":\"Hello\"}],\"bool\":false}");
-    std::cout << data.format_json();
+    std::cout << data.format_json() << std::endl;
+
+    JsonObject test_data_object = data.get_object();
+    for (auto iter = test_data_object.begin(); iter != test_data_object.end(); ++iter) {
+        std::cout << "obj_key: " << iter->first << std::endl;
+        if (iter->second.type() == JSON_ARRAY_TYPE) {
+            for (auto iter_arr = iter->second.to_array()->begin(); iter_arr != iter->second.to_array()->end(); ++iter_arr) {
+                std::cout << "arr_val: " << iter_arr->to_string() << std::endl; 
+            }
+        } else {
+            std::cout << "obj_val: " << iter->second.to_string() << std::endl; 
+        }
+    }
 }
 
 }

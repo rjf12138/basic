@@ -176,7 +176,7 @@ public:
     typedef std::vector<JsonValue>::iterator iterator;
 public:
     JsonArray(void);
-    JsonArray(JsonArray &jarr);
+    JsonArray(const JsonArray &jarr);
     ~JsonArray(void);
 
     // 序列化和反序列化
@@ -249,7 +249,12 @@ public:
     JsonValue& operator[](const int &key);
 
     ValueType type(void) const {return type_;}
+
     std::string to_string(void);
+    int64_t to_int(void);
+    double to_double(void);
+    JsonArray* to_array(void);
+    JsonObject* to_object(void);
 
 public:
     void copy(const JsonValue &val, bool is_release = true);

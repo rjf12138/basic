@@ -669,7 +669,7 @@ JsonObject::end()
 ////////////////////////////////////////////////////////////
 
 JsonArray::JsonArray(void){}
-JsonArray::JsonArray(JsonArray &jarr)
+JsonArray::JsonArray(const JsonArray &jarr)
 {
     *this = jarr;
 }
@@ -1194,6 +1194,42 @@ JsonValue::to_string(void)
         }
     }
     return JsonNull().to_string();
+}
+
+int64_t
+JsonValue::to_int(void)
+{
+    if (type_ == JSON_NUMBER_TYPE) {
+        return dynamic_cast<JsonNumber*>(value_)->to_int();
+    }
+    return 0;
+}
+
+double 
+JsonValue::to_double(void)
+{
+    if (type_ == JSON_NUMBER_TYPE) {
+        return dynamic_cast<JsonNumber*>(value_)->to_double();
+    }
+    return 0;
+}
+
+JsonArray* 
+JsonValue::to_array(void)
+{
+    if (type_ == JSON_ARRAY_TYPE) {
+        return dynamic_cast<JsonArray*>(value_);
+    }
+    return nullptr;
+}
+
+JsonObject* 
+JsonValue::to_object(void)
+{
+    if (type_ == JSON_OBJECT_TYPE) {
+        return dynamic_cast<JsonObject*>(value_);
+    }
+    return nullptr;
 }
 
 ///////////////////////////////// WeJson //////////////////////////////////////////////////
