@@ -1,0 +1,52 @@
+{
+  "name": "basic",
+  "version": "0.1.0",
+  "path": "/home/ruanjian/workspace/project/basic",
+  "uuid": "fda20367-d133-4603-8646-e787064c8737",
+  "build_system": "cmake",
+  "cmake_minimum_version": "3.10",
+  "language": "CXX",
+  "cxx_standard": 11,
+  "source_dirs": [
+    "src"
+  ],
+  "include_dirs": [
+    "inc"
+  ],
+  "extern_inc_dir": "extern_inc",
+  "lib_dir": "lib",
+  "output_dir": "output",
+  "main_file": "ByteBuffer_Test.cc",
+  "build_mode": "debug",
+  "generate_type": "executable",
+  "dependencies": [],
+  "deps": {
+    "libs": [
+      "gtest",
+      "pthread"
+    ],
+    "lib_dirs": [],
+    "inc_dirs": [],
+    "src_dirs": []
+  },
+  "build_options": {
+    "debug": {
+      "defines": [
+        "DEBUG"
+      ],
+      "optimization": "-O0 -Wall"
+    },
+    "release": {
+      "defines": [
+        "NDEBUG"
+      ],
+      "optimization": "-O2 -Wall"
+    }
+  },
+  "targets": [
+    {
+      "name": "basic",
+      "type": "executable"
+    }
+  ]
+}

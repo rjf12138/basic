@@ -1,31 +1,59 @@
 cmake_minimum_required(VERSION 3.10)
 
-# 设置项目名称
-project(basic)
+project(basic VERSION 0.1.0 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_DEBUG_POSTFIX d)
 
+# Compiler flags
 set(CXX_FLAGS
     -g
-    # -DVALGRIND
+    -ggdb
     -DCHECK_PTHREAD_RETURN_VALUE
     -D_FILE_OFFSET_BITS=64
     -march=native
-    # -MMD
     -rdynamic
-    )
+    -O0 -Wall
+    -DDEBUG
+)
 string(REPLACE ";" " " CMAKE_CXX_FLAGS "${CXX_FLAGS}")
 
-# 设置生成文件输出路径
-set(LIBRARY_OUTPUT_PATH, ./output/debug/lib)
-add_library(basic STATIC "")
+# Output directories
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/output/debug/bin)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/output/debug/lib)
 
-target_include_directories(basic PUBLIC ./inc/)
-target_include_directories(basic PRIVATE ./extern_inc/)
+# Source files
+file(GLOB_RECURSE SRC_FILES
+    ${CMAKE_SOURCE_DIR}/src/*.cc
+    ${CMAKE_SOURCE_DIR}/src/*.cpp
+    ${CMAKE_SOURCE_DIR}/src/*.cxx
+    ${CMAKE_SOURCE_DIR}/src/*.c
+)
 
-target_link_directories(basic PRIVATE ./lib/debug/)
+# Include directories
+include_directories(${CMAKE_SOURCE_DIR}/inc)
+include_directories(${CMAKE_SOURCE_DIR}/extern_inc)
+include_directories(${CMAKE_SOURCE_DIR}/src)
 
-target_link_libraries(basic PRIVATE gtest)
-target_link_libraries(basic PRIVATE pthread)
-include(src/CMakeLists.txt)
+# Link directories
+link_directories(${CMAKE_SOURCE_DIR}/lib/debug)
+
+# Build targets
+add_executable(basic
+    ${CMAKE_SOURCE_DIR}/main/ByteBuffer_Test.cc
+    ${SRC_FILES}
+)
+
+# Include dirs for target basic
+target_include_directories(basic PRIVATE ${CMAKE_SOURCE_DIR}/inc)
+target_include_directories(basic PRIVATE ${CMAKE_SOURCE_DIR}/extern_inc)
+target_include_directories(basic PRIVATE ${CMAKE_SOURCE_DIR}/src)
+
+# Legacy dependencies
+target_link_libraries(basic
+    gtest
+    pthread
+)
 

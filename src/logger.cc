@@ -117,7 +117,7 @@ Logger::get_stream_func(InfoLevel level)
             return msg_to_stream_fatal_;
         default: 
         {
-            output_to_stderr("Logger::set_stream_func: Unknown option!");
+            output_to_stderr("Logger::get_stream_func: Unknown option!");
         } break;
     }
 
@@ -179,8 +179,7 @@ Logger::print_msg(InfoLevel level, int line, std::string file_name, std::string 
 std::string 
 Logger::get_msg(InfoLevel level, int line, std::string file_name, std::string func, const char *format, ...)
 {
-    char *msg_buff = new char[4096];
-    memset(msg_buff, 0, 4096);
+    char msg_buff[4096] = {0};
 
     va_list arg_ptr;
     va_start(arg_ptr,format);
@@ -202,9 +201,6 @@ Logger::get_msg(InfoLevel level, int line, std::string file_name, std::string fu
     std::ostringstream ostr;
     this->assemble_msg(ostr, tmp_msg, false);
 
-    delete[] msg_buff;
-    msg_buff = nullptr;
-
     return ostr.str();
 }
 
@@ -215,7 +211,9 @@ Logger::assemble_msg(std::ostringstream &ostr, const MsgContent &msg, bool is_co
         ostr << "\033[36m[" << msg.when << "]\033[0m";
         ostr << "\033[35m[" << msg.msg_func << "]";
         ostr << "[" << msg.which_file << ":" << msg.which_line << "]";
-        ostr << "[" << level_convert(msg.info_level) << "\033[35m]:\033[0m ";
+        ostr << "[";
+        ostr << "\033[32m" << level_convert(msg.info_level) << "\033[0m";
+        ostr << "\033[35m]:\033[0m ";
 
         switch (msg.info_level) {
             case LOG_LEVEL_TRACE:
@@ -256,17 +254,17 @@ Logger::level_convert(enum InfoLevel level)
     switch(level)
     {
         case LOG_LEVEL_TRACE:
-            return "\033[32mTRACE\033[0m";
+            return "TRACE";
         case LOG_LEVEL_DEBUG:
-            return "\033[32mDEBUG\033[0m";
+            return "DEBUG";
         case LOG_LEVEL_INFO:
-            return "\033[32mINFO\033[0m";
+            return "INFO";
         case LOG_LEVEL_WARN:
-            return "\033[33mWARN\033[0m";
+            return "WARN";
         case LOG_LEVEL_ERROR:
-            return "\033[31mERROR\033[0m";
+            return "ERROR";
         case LOG_LEVEL_FATAL:
-            return "\033[31;1mFATAL\033[0m";
+            return "FATAL";
         default:
             return "Unknown Log Level";
     }

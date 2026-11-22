@@ -51,13 +51,9 @@ random_str(ByteBuffer &src, ByteBuffer &patten, int gap)
 class ByteBuffer_Test : public ::testing::Test {
 protected:
     void SetUp() override {
-        // Code here will be called immediately after the constructor (right
-        // before each test).
     }
 
     void TearDown() override {
-        // Code here will be called immediately after each test (right
-        // before the destructor).
     }
 };
 
@@ -158,6 +154,108 @@ TEST_F(ByteBuffer_Test, ByteBuff_none_lock_read_write)
         std::string tmpstr;
         buff.read_string(tmpstr);
     }
+}
+
+// 测试 int64 读写（验证 sizeof(int64_t) 修正）
+TEST_F(ByteBuffer_Test, read_write_int64_full_range)
+{
+    ByteBuffer buff(1024);
+    // 测试正负数边界
+    int64_t test_values[] = {
+        0, 1, -1,
+        INT64_MAX, INT64_MIN,
+        0x7FFFFFFFFFFFFFFFLL, static_cast<int64_t>(0x8000000000000000ULL),
+        12345678901234LL, -12345678901234LL
+    };
+    for (size_t i = 0; i < sizeof(test_values)/sizeof(test_values[0]); ++i) {
+        ASSERT_EQ(buff.write_int64(test_values[i]), 8);
+        int64_t val;
+        ASSERT_EQ(buff.read_int64(val), 8);
+        ASSERT_EQ(val, test_values[i]);
+        ASSERT_EQ(buff.data_size(), 0);
+    }
+}
+
+// 测试 write_string str_size 参数
+TEST_F(ByteBuffer_Test, write_string_str_size_param)
+{
+    ByteBuffer buff(100);
+    std::string str = "Hello, World! This is a test.";
+    
+    // str_size == -1 时写完整字符串
+    ASSERT_EQ(buff.write_string(str, -1), static_cast<ssize_t>(str.length()));
+    ASSERT_EQ(buff.str(), str);
+    buff.clear();
+
+    // str_size 指定部分长度
+    std::string partial = str.substr(0, 5);
+    ASSERT_EQ(buff.write_string(str, 5), 5);
+    ASSERT_EQ(buff.str(), partial);
+    buff.clear();
+
+    // str_size 为 0
+    ASSERT_EQ(buff.write_string(str, 0), 0);
+    ASSERT_EQ(buff.str(), "");
+}
+
+// 测试 operator+ 值语义（不修改原对象）
+TEST_F(ByteBuffer_Test, operator_plus_value_semantics)
+{
+    ByteBuffer a("Hello");
+    ByteBuffer b(" World");
+    ByteBuffer original_a = a;
+    
+    ByteBuffer c = a + b;
+    
+    ASSERT_EQ(a, original_a);  // a 不应被修改
+    ASSERT_EQ(c.str(), "Hello World");
+}
+
+// 测试 str() 在空 buffer 时安全返回（之前会除零崩溃）
+TEST_F(ByteBuffer_Test, str_on_empty_buffer)
+{
+    ByteBuffer empty;
+    ASSERT_EQ(empty.str(), "");
+    
+    ByteBuffer cleared(100);
+    cleared.write_string("test");
+    ASSERT_EQ(cleared.str(), "test");
+    cleared.clear();
+    ASSERT_EQ(cleared.str(), "");
+    ASSERT_EQ(cleared.data_size(), 0);
+    ASSERT_EQ(cleared.empty(), true);
+}
+
+// 测试数据长度为0时读取不会崩溃（之前会除零崩溃），安全返回0
+TEST_F(ByteBuffer_Test, read_on_empty_buffer)
+{
+    ByteBuffer empty;
+    int8_t  v8  = 0;
+    int16_t v16 = 0;
+    int32_t v32 = 0;
+    int64_t v64 = 0;
+    ASSERT_EQ(empty.read_int8(v8),   0);
+    ASSERT_EQ(empty.read_int16(v16), 0);
+    ASSERT_EQ(empty.read_int32(v32), 0);
+    ASSERT_EQ(empty.read_int64(v64), 0);
+
+    char buf[16] = {0};
+    ASSERT_EQ(empty.read_bytes(buf, 8), 0);
+    ASSERT_EQ(empty.read_only(0, buf, 4), 0);
+
+    std::string s;
+    ASSERT_EQ(empty.read_string(s), 0);
+    ASSERT_EQ(empty.str(), "");
+    ASSERT_EQ(empty.data_size(), 0);
+
+    // 读取完数据后的 buffer 继续读取也应安全
+    ByteBuffer drained("abc");
+    std::string content;
+    ASSERT_EQ(drained.read_string(content), 3);
+    ASSERT_EQ(drained.data_size(), 0);
+    ASSERT_EQ(drained.read_int8(v8), 0);
+    ASSERT_EQ(drained.read_bytes(buf, 4), 0);
+    ASSERT_EQ(drained.read_only(0, buf, 4), 0);
 }
 
 // 测试 buffer 空间增长，压力测试
@@ -592,6 +690,199 @@ TEST_F(ByteBuffer_Test, iterator)
         }
         buff.read_string(read_str);
     }
+}
+
+// 测试迭代器比较运算在循环队列回绕场景下正确性
+TEST_F(ByteBuffer_Test, iterator_comparison_wraparound)
+{
+    ByteBuffer buff(16);
+    // 写入足够数据使循环队列回绕
+    for (int cycle = 0; cycle < 10; ++cycle) {
+        // 写入 12 字节
+        for (int i = 0; i < 12; ++i) {
+            buff.write_int8(static_cast<int8_t>('a' + i));
+        }
+        // 读取 8 字节（留下 4 字节，使下一轮写入时回绕）
+        int8_t val;
+        for (int i = 0; i < 8; ++i) {
+            buff.read_int8(val);
+        }
+
+        // 验证 begin < end
+        auto begin = buff.begin();
+        auto end = buff.end();
+        ASSERT_LT(begin, end);
+        ASSERT_LE(begin, end);
+        ASSERT_GT(end, begin);
+        ASSERT_GE(end, begin);
+        ASSERT_EQ(begin, begin);
+    }
+}
+
+// 测试 == 和 != 操作符
+TEST_F(ByteBuffer_Test, equality_test)
+{
+    ByteBuffer a("Hello World");
+    ByteBuffer b("Hello World");
+    ByteBuffer c("Hello");
+    ByteBuffer d("Hello World!");
+    ByteBuffer empty1;
+    ByteBuffer empty2;
+
+    ASSERT_EQ(a, b);
+    ASSERT_NE(a, c);
+    ASSERT_NE(a, d);
+    ASSERT_EQ(empty1, empty2);
+
+    // 测试自己赋值给自己
+    a = a;
+    ASSERT_EQ(a, b);
+}
+
+// 测试 remove 函数（包含之前 "多减1" 的修复验证）
+TEST_F(ByteBuffer_Test, remove_test)
+{
+    // 删除全部匹配
+    ByteBuffer data("abcaabbcc");
+    data.remove(ByteBuffer("bc"));
+    ASSERT_EQ(data, ByteBuffer("aaabc"));
+    
+    data.clear();
+    data.write_string("aaaa");
+    data.remove(ByteBuffer("a"));
+    ASSERT_EQ(data.data_size(), 0);
+
+    // 删除指定索引
+    data.clear();
+    data.write_string("one two three two four");
+    data.remove(ByteBuffer("two"), 1);  // 删除第二个 "two"
+    ASSERT_EQ(data, ByteBuffer("one two three  four"));
+    
+    // 测试空模式
+    data.clear();
+    data.write_string("hello");
+    ByteBuffer result = data.remove(ByteBuffer(""));
+    ASSERT_EQ(result, data);
+}
+
+// 测试 replace 函数
+TEST_F(ByteBuffer_Test, replace_test)
+{
+    ByteBuffer data("hello world hello");
+    ByteBuffer result = data.replace(ByteBuffer("hello"), ByteBuffer("hi"));
+    ASSERT_EQ(result, ByteBuffer("hi world hi"));
+    
+    // index 超出范围时替换所有匹配子串
+    data.clear();
+    data.write_string("hello world hello");
+    result = data.replace(ByteBuffer("hello"), ByteBuffer("hi"), 99);
+    ASSERT_EQ(result, ByteBuffer("hi world hi"));
+
+    // 替换部分
+    data.clear();
+    data.write_string("aaa bbb ccc");
+    result = data.replace(ByteBuffer("bbb"), ByteBuffer("ddd"), 0);
+    ASSERT_EQ(result, ByteBuffer("aaa ddd ccc"));
+}
+
+// 测试 insert_front / insert_back
+TEST_F(ByteBuffer_Test, insert_operations)
+{
+    ByteBuffer src("abc");
+    auto iter = src.begin();
+
+    src.insert_front(iter, ByteBuffer("123"));
+    ASSERT_EQ(src, ByteBuffer("123abc"));
+
+    src.clear();
+    src.write_string("abc");
+    iter = src.begin();
+    src.insert_back(iter, ByteBuffer("123"));
+    ASSERT_EQ(src, ByteBuffer("a123bc"));
+}
+
+// 测试正则匹配 match
+TEST_F(ByteBuffer_Test, match_regex)
+{
+    ByteBuffer buff;
+    buff.write_string("abc123 def456 ghi789");
+    ByteBuffer patten("\\d+");
+    auto results = buff.match(patten);
+    ASSERT_EQ(results.size(), 3);
+    ASSERT_EQ(results[0].str(), "123");
+    ASSERT_EQ(results[1].str(), "456");
+    ASSERT_EQ(results[2].str(), "789");
+
+    // 空 buffer match
+    ByteBuffer empty;
+    auto empty_results = empty.match(patten);
+    ASSERT_EQ(empty_results.size(), 0);
+}
+
+// 测试 find 函数
+TEST_F(ByteBuffer_Test, find_test)
+{
+    ByteBuffer data("hello world, hello cpp, hello test");
+    auto results = data.find(ByteBuffer("hello"));
+    ASSERT_EQ(results.size(), 3);
+    
+    // 无匹配
+    auto no_match = data.find(ByteBuffer("xyz"));
+    ASSERT_EQ(no_match.size(), 0);
+    
+    // 空模式
+    auto empty_pattern = data.find(ByteBuffer(""));
+    ASSERT_EQ(empty_pattern.size(), 0);
+}
+
+// 测试 split 函数
+TEST_F(ByteBuffer_Test, split_test)
+{
+    ByteBuffer data("a,b,c,d");
+    auto parts = data.split(ByteBuffer(","));
+    ASSERT_EQ(parts.size(), 4);
+    ASSERT_EQ(parts[0], ByteBuffer("a"));
+    ASSERT_EQ(parts[1], ByteBuffer("b"));
+    ASSERT_EQ(parts[2], ByteBuffer("c"));
+    ASSERT_EQ(parts[3], ByteBuffer("d"));
+    
+    // 空分割符
+    auto no_split = data.split(ByteBuffer(""));
+    ASSERT_EQ(no_split.size(), 1);
+    ASSERT_EQ(no_split[0], data);
+}
+
+// 测试 get_data
+TEST_F(ByteBuffer_Test, get_data_test)
+{
+    ByteBuffer src("Hello World");
+    ByteBuffer dest;
+    auto begin = src.begin();
+    auto end = src.begin();
+    end += 5;
+    
+    ssize_t copied = src.get_data(dest, begin, 5);
+    ASSERT_EQ(copied, 5);
+    ASSERT_EQ(dest, ByteBuffer("Hello"));
+}
+
+// 测试 bytecmp
+TEST_F(ByteBuffer_Test, bytecmp_test)
+{
+    ByteBuffer data("Hello World");
+    ByteBuffer patten("Hello");
+    
+    auto iter = data.begin();
+    ASSERT_EQ(data.bytecmp(iter, patten), true);
+    
+    iter += 6;
+    patten.clear();
+    patten.write_string("World");
+    ASSERT_EQ(data.bytecmp(iter, patten), true);
+    
+    patten.clear();
+    patten.write_string("Worlx");
+    ASSERT_EQ(data.bytecmp(iter, patten), false);
 }
 
 #define RANDOM_RANGE 256

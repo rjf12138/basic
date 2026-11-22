@@ -111,12 +111,17 @@ ssize_t ByteBuffer::set_extern_buffer(buffptr exbuf, ssize_t buff_size)
 
 void ByteBuffer::next_read_pos(int offset)
 {
+    if (max_buffer_size_ == 0) {
+        return;
+    }
     start_read_pos_ = (start_read_pos_ + offset) % max_buffer_size_;
 }
 
 void ByteBuffer::next_write_pos(int offset)
 {
-    
+    if (max_buffer_size_ == 0) {
+        return;
+    }
     start_write_pos_ = (start_write_pos_ + offset) % max_buffer_size_;
 }
 
@@ -257,7 +262,7 @@ ssize_t ByteBuffer::copy_data_to_buffer(const void *data, ssize_t size)
 
 ssize_t ByteBuffer::copy_data_from_buffer(void *data, ssize_t size)
 {
-    if (data == nullptr  || size <= 0) {
+    if (data == nullptr  || size <= 0 || this->data_size() <= 0) {
         return 0;
     }
     
@@ -268,6 +273,9 @@ ssize_t ByteBuffer::copy_data_from_buffer(void *data, ssize_t size)
     while (true)
     {
         ssize_t read_size = this->get_cont_read_size() > copy_size ? copy_size : this->get_cont_read_size();
+        if (read_size <= 0) {
+            break;
+        }
         memmove(data_ptr, this->get_read_buffer_ptr(), read_size);
         this->update_read_pos(read_size);
         data_ptr = data_ptr + read_size;
@@ -302,7 +310,7 @@ ByteBuffer::read_int32(int32_t &val)
 ssize_t
 ByteBuffer::read_int64(int64_t &val)
 {
-    return this->copy_data_from_buffer(&val, sizeof(ssize_t));
+    return this->copy_data_from_buffer(&val, sizeof(int64_t));
 }
 
 // 字符串是以 ‘\0’ 结尾的
@@ -363,6 +371,9 @@ ByteBuffer::read_only(ssize_t start_pos, void *buf, ssize_t buf_size)
 std::string 
 ByteBuffer::str()
 {
+    if (data_size() <= 0) {
+        return "";
+    }
     bufftype *buffer = new bufftype[data_size() + 1];
     memset(buffer, 0, data_size() + 1);
     read_only(0, buffer, data_size());
@@ -392,13 +403,16 @@ ByteBuffer::write_int32(int32_t val)
 ssize_t
 ByteBuffer::write_int64(int64_t val)
 {
-    return this->copy_data_to_buffer(&val, sizeof(ssize_t));
+    return this->copy_data_to_buffer(&val, sizeof(int64_t));
 }
 
 ssize_t
 ByteBuffer::write_string(const std::string &str, ssize_t str_size)
 {
-    return this->copy_data_to_buffer(str.c_str(), str.length());
+    if (str_size == -1) {
+        str_size = str.length();
+    }
+    return this->copy_data_to_buffer(str.c_str(), str_size);
 }
 
 ssize_t ByteBuffer::write_bytes(const void *buf, ssize_t buf_size)
@@ -433,21 +447,12 @@ ByteBuffer::get_data(ByteBuffer &out, ByteBufferIterator &copy_start, ssize_t co
 
 //////////////////////// 重载操作符 /////////////////////////
 
-ByteBuffer& 
+ByteBuffer 
 ByteBuffer::operator+(const ByteBuffer &rhs)
 {
-    ssize_t rhs_read_size = rhs.get_cont_read_size();
-    buffptr rhs_read_ptr = rhs.get_read_buffer_ptr();
-
-    this->copy_data_to_buffer(rhs_read_ptr, rhs_read_size);
-    if (rhs_read_size < rhs.data_size()) {
-        rhs_read_size = rhs.get_cont_read_size();
-        rhs_read_ptr = rhs.get_read_buffer_ptr();
-
-        this->copy_data_to_buffer(rhs_read_ptr, rhs_read_size);
-    }
-
-    return *this;
+    ByteBuffer result(*this);
+    result += rhs;
+    return result;
 }
 
 ByteBuffer& 
@@ -631,6 +636,10 @@ ByteBuffer::update_write_pos(ssize_t offset)
         return -1;
     }
 
+    if (max_buffer_size_ == 0) {
+        return -1;
+    }
+
     used_data_size_ += offset;
     free_data_size_ -= offset;
     start_write_pos_ = (start_write_pos_ + offset) % max_buffer_size_;
@@ -642,6 +651,10 @@ ssize_t
 ByteBuffer::update_read_pos(ssize_t offset)
 {
     if (offset < 0 || offset > used_data_size_) {
+        return -1;
+    }
+
+    if (max_buffer_size_ == 0) {
         return -1;
     }
 
@@ -675,7 +688,7 @@ ByteBuffer::find(const ByteBuffer &patten)
             
             if (patten_index == patten.data_size()) {
                 result.push_back(this->begin() + i);
-                i += patten.data_size();
+                i += patten.data_size() - 1; // for 循环会再 ++i,总推进正好一个模式长度
             }
             patten_index = 0;
         }
@@ -739,7 +752,7 @@ ByteBuffer::replace(ByteBuffer buf1, const ByteBuffer &buf2, ssize_t index)
     }
 
     if (index >= static_cast<ssize_t>(find_buff.size()) || index < 0) {
-        return *this;
+        index = 0; // index 超出范围时,替换所有匹配子串
     }
     
     for (std::size_t i = index; i < find_buff.size(); ++i) {
@@ -747,10 +760,10 @@ ByteBuffer::replace(ByteBuffer buf1, const ByteBuffer &buf2, ssize_t index)
         if (copy_size > 0) {
             this->get_data(tmp, copy_pos_iter, copy_size);
             result += tmp;
-            result += buf2;
-            copy_pos_iter = find_buff[i] + buf1.data_size();
             tmp.clear();
         }
+        result += buf2;
+        copy_pos_iter = find_buff[i] + buf1.data_size();
     }
 
     copy_size = this->end() - copy_pos_iter; // 保存剩余的字符
@@ -790,8 +803,9 @@ ByteBuffer::remove(const ByteBuffer &buff, ssize_t index)
         this->get_data(out, begin_iter, copy_size);
         tmp_buf = tmp_buf + out;
 
+        out.clear(); // 清空,避免第二段追加到第一段后面导致重复拼接
         find_buff[index] = find_buff[index] + buff.data_size();
-        copy_size = this->end() - find_buff[index] - 1;
+        copy_size = this->end() - find_buff[index];
         this->get_data(out, find_buff[index], copy_size);
         tmp_buf = tmp_buf + out;
     }
@@ -1007,15 +1021,14 @@ ByteBufferIterator::operator>(const ByteBufferIterator& iter) const
     if (buff_ != iter.buff_) {
         return false;
     }
-    if (curr_pos_ > iter.curr_pos_) {
-        return true;
-    } else if (curr_pos_ < iter.curr_pos_) {
-        if (curr_pos_ < buff_->start_read_pos_) {
-            return true;
-        }
-    }
-
-    return false;
+    // 将物理位置转为相对于 start_read_pos_ 的逻辑偏移来正确处理循环队列的环绕
+    ssize_t lhs_offset = curr_pos_ >= buff_->start_read_pos_
+        ? curr_pos_ - buff_->start_read_pos_
+        : (buff_->max_buffer_size_ - buff_->start_read_pos_) + curr_pos_;
+    ssize_t rhs_offset = iter.curr_pos_ >= buff_->start_read_pos_
+        ? iter.curr_pos_ - buff_->start_read_pos_
+        : (buff_->max_buffer_size_ - buff_->start_read_pos_) + iter.curr_pos_;
+    return lhs_offset > rhs_offset;
 }
 bool 
 ByteBufferIterator::operator>=(const ByteBufferIterator& iter) const 
@@ -1023,15 +1036,13 @@ ByteBufferIterator::operator>=(const ByteBufferIterator& iter) const
     if (buff_ != iter.buff_) {
         return false;
     }
-    if (curr_pos_ >= iter.curr_pos_) {
-        return true;
-    } else if (curr_pos_ < iter.curr_pos_) {
-        if (curr_pos_ < buff_->start_read_pos_) {
-            return true;
-        }
-    }
-
-    return false;
+    ssize_t lhs_offset = curr_pos_ >= buff_->start_read_pos_
+        ? curr_pos_ - buff_->start_read_pos_
+        : (buff_->max_buffer_size_ - buff_->start_read_pos_) + curr_pos_;
+    ssize_t rhs_offset = iter.curr_pos_ >= buff_->start_read_pos_
+        ? iter.curr_pos_ - buff_->start_read_pos_
+        : (buff_->max_buffer_size_ - buff_->start_read_pos_) + iter.curr_pos_;
+    return lhs_offset >= rhs_offset;
 }
 bool 
 ByteBufferIterator::operator<(const ByteBufferIterator& iter) const 
@@ -1039,15 +1050,13 @@ ByteBufferIterator::operator<(const ByteBufferIterator& iter) const
     if (buff_ != iter.buff_) {
         return false;
     }
-    if (curr_pos_ >= iter.curr_pos_) {
-        return false;
-    } else if (curr_pos_ < iter.curr_pos_) {
-        if (curr_pos_ < buff_->start_read_pos_) {
-            return false;
-        }
-    }
-
-    return true;
+    ssize_t lhs_offset = curr_pos_ >= buff_->start_read_pos_
+        ? curr_pos_ - buff_->start_read_pos_
+        : (buff_->max_buffer_size_ - buff_->start_read_pos_) + curr_pos_;
+    ssize_t rhs_offset = iter.curr_pos_ >= buff_->start_read_pos_
+        ? iter.curr_pos_ - buff_->start_read_pos_
+        : (buff_->max_buffer_size_ - buff_->start_read_pos_) + iter.curr_pos_;
+    return lhs_offset < rhs_offset;
 }
 bool 
 ByteBufferIterator::operator<=(const ByteBufferIterator& iter) const 
@@ -1055,15 +1064,13 @@ ByteBufferIterator::operator<=(const ByteBufferIterator& iter) const
     if (buff_ != iter.buff_) {
         return false;
     }
-    if (curr_pos_ > iter.curr_pos_) {
-        return false;
-    } else if (curr_pos_ < iter.curr_pos_) {
-        if (curr_pos_ < buff_->start_read_pos_) {
-            return false;
-        }
-    }
-
-    return true;
+    ssize_t lhs_offset = curr_pos_ >= buff_->start_read_pos_
+        ? curr_pos_ - buff_->start_read_pos_
+        : (buff_->max_buffer_size_ - buff_->start_read_pos_) + curr_pos_;
+    ssize_t rhs_offset = iter.curr_pos_ >= buff_->start_read_pos_
+        ? iter.curr_pos_ - buff_->start_read_pos_
+        : (buff_->max_buffer_size_ - buff_->start_read_pos_) + iter.curr_pos_;
+    return lhs_offset <= rhs_offset;
 }
 ByteBufferIterator& 
 ByteBufferIterator::operator=(const ByteBufferIterator& src)

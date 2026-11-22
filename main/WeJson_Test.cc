@@ -93,19 +93,14 @@ namespace {
 class WeJson_Test : public ::testing::Test {
 protected:
     void SetUp() override {
-        // Code here will be called immediately after the constructor (right
-        // before each test).
     }
 
     void TearDown() override {
-        // Code here will be called immediately after each test (right
-        // before the destructor).
     }
 };
 
 bool test_number(double val, std::string str_val)
 {
-//    fprintf(stdout, "double: %lf, str_double: %s\n", val, str_val.c_str());
     JsonNumber json_number(val);
     std::ostringstream ostr;
     ostr << json_number;
@@ -185,6 +180,36 @@ TEST_F(WeJson_Test, NUMBER_TEST)
     }
 }
 
+// 测试 JsonNumber::parse 对边界情况的处理（确保不越界读取）
+TEST_F(WeJson_Test, NumberParseBoundary)
+{
+    ByteBuffer buff;
+    JsonNumber num;
+    
+    // 单独的 "0"
+    buff.write_string("0");
+    auto begin0 = buff.begin();
+    auto end0 = buff.end();
+    num.parse(begin0, end0);
+    ASSERT_EQ(num.to_double(), 0.0);
+    
+    // "0." 后面无更多内容
+    buff.clear();
+    buff.write_string("0.");
+    auto begin = buff.begin();
+    auto end = buff.end();
+    num.parse(begin, end);
+    ASSERT_EQ(num.to_double(), 0.0);
+    
+    // 负数零
+    buff.clear();
+    buff.write_string("-0.5");
+    auto begin_neg = buff.begin();
+    auto end_neg = buff.end();
+    num.parse(begin_neg, end_neg);
+    ASSERT_EQ(num.to_double(), -0.5);
+}
+
 TEST_F(WeJson_Test, STRING_TEST)
 {
     ByteBuffer buff1, buff2;
@@ -216,6 +241,15 @@ TEST_F(WeJson_Test, BooleanTest)
 
     jb1.parse(bbegin, bend);
     ASSERT_EQ(jb1.to_string(), "false");
+    
+    // 测试 operator==
+    JsonBool jbt(true), jbf(false);
+    ASSERT_EQ(jbt, true);
+    ASSERT_EQ(jbf, false);
+    ASSERT_NE(jbt, false);
+    ASSERT_NE(jbf, true);
+    ASSERT_EQ(jbt, JsonBool(true));
+    ASSERT_NE(jbt, JsonBool(false));
 }
 
 TEST_F(WeJson_Test, NullTest)
@@ -229,6 +263,39 @@ TEST_F(WeJson_Test, NullTest)
 
     jn1.parse(bbegin, bend);
     ASSERT_EQ(jn1.to_string(), "null");
+    
+    // 测试 JsonNull::operator== （修复后）
+    JsonNull jn2, jn3;
+    ASSERT_EQ(jn1, jn2);
+    ASSERT_EQ(jn2, jn3);
+}
+
+// 测试 JsonArray::operator== (修复后不应所有非空数组都判等)
+TEST_F(WeJson_Test, ArrayEqualityTest)
+{
+    WeJson arr1("[]");
+    WeJson arr2("[]");
+    ASSERT_EQ(arr1, arr2);
+    
+    WeJson arr3("[1, 2, 3]");
+    WeJson arr4("[1, 2, 3]");
+    ASSERT_EQ(arr3, arr4);
+    
+    WeJson arr5("[1, 2, 3]");
+    WeJson arr6("[1, 2, 4]");
+    ASSERT_NE(arr5, arr6);  // 这应该在修复后正常工作
+    
+    WeJson arr7("[1, 2, 3]");
+    WeJson arr8("[1, 2]");
+    ASSERT_NE(arr7, arr8);
+    
+    WeJson arr9("[\"hello\", true]");
+    WeJson arr10("[\"hello\", false]");
+    ASSERT_NE(arr9, arr10);
+    
+    WeJson arr11("[1, \"two\", true, null]");
+    WeJson arr12("[1, \"two\", true, null]");
+    ASSERT_EQ(arr11, arr12);
 }
 
 TEST_F(WeJson_Test, EmptyObjectArrayTest)
@@ -238,6 +305,23 @@ TEST_F(WeJson_Test, EmptyObjectArrayTest)
     JsonObject obj = js.get_object();
     obj.add("Array", arr);
     JsonArray test_arr = obj["Array"];
+}
+
+// 测试带注释的 JSON 解析
+TEST_F(WeJson_Test, JsonWithComments)
+{
+    std::string json_with_comments = 
+        "{\n"
+        "  // This is a comment\n"
+        "  \"name\": \"John\",\n"
+        "  \"age\": 30,  // inline comment\n"
+        "  // This is another comment\n"
+        "  \"city\": \"NYC\"\n"
+        "}";
+    WeJson js(json_with_comments);
+    ASSERT_EQ(js.get_object()["name"], "John");
+    ASSERT_EQ(js.get_object()["age"], 30);
+    ASSERT_EQ(js.get_object()["city"], "NYC");
 }
 
 TEST_F(WeJson_Test, ObjectArrayTest)
@@ -275,7 +359,7 @@ TEST_F(WeJson_Test, ObjectArrayTest)
     ASSERT_EQ(js.get_object()["test-obj"]["num"], 12.34);
     ASSERT_EQ(js.get_object()["test-obj"]["bool"], true);
     ASSERT_EQ(js.get_object()["test-obj"]["name"], "Hello, World!");
-    ASSERT_EQ(js.get_object()["test-obj"]["tnull"], "null");
+    ASSERT_EQ(js.get_object()["test-obj"]["tnull"], JsonNull());
 
     ASSERT_EQ(js.get_object()["test-obj"]["arr"][0], true);
     ASSERT_EQ(js.get_object()["test-obj"]["arr"][1], "Hello");
@@ -342,15 +426,9 @@ TEST_F(WeJson_Test, ObjectArrayTest)
     std::cout << "=============== End =================" << std::endl;
     arr1.get_array().add(obj1.get_object());
     obj1.get_object().add("arr", arr1);
-    // obj1.to_string();  // 输出后时压缩的
-    // obj1.format_json();// 输出后会格式化
-
-    // std::cout << obj1.format_json() << std::endl;
 
     obj1.get_object().erase("str"); // 对像移除关键字为str的元素
     arr1.get_array().erase(3); // 数组移除下标是 3 的元素
-    // std::cout << obj1.format_json() << std::endl;
-    // std::cout << arr1.format_json() << std::endl;
 
     WeJson data("{\"arr\":[\"Hello\",123,false,null,{\"bool\":false,\"int\":123,\"null\":null,\"str\":\"Hello\"}],\"bool\":false}");
     std::cout << data.format_json() << std::endl;
@@ -359,13 +437,116 @@ TEST_F(WeJson_Test, ObjectArrayTest)
     for (auto iter = test_data_object.begin(); iter != test_data_object.end(); ++iter) {
         std::cout << "obj_key: " << iter->first << std::endl;
         if (iter->second.type() == JSON_ARRAY_TYPE) {
-            for (auto iter_arr = iter->second.to_array()->begin(); iter_arr != iter->second.to_array()->end(); ++iter_arr) {
+            for (auto iter_arr = iter->second.to_array().begin(); iter_arr != iter->second.to_array().end(); ++iter_arr) {
                 std::cout << "arr_val: " << iter_arr->to_string() << std::endl; 
             }
         } else {
             std::cout << "obj_val: " << iter->second.to_string() << std::endl; 
         }
     }
+}
+
+// 测试嵌套 JSON 解析后序列化一致
+TEST_F(WeJson_Test, NestedJsonRoundTrip)
+{
+    std::string json_str = 
+        "{\"name\":\"test\","
+        "\"data\":{\"items\":[1,2,3],\"active\":true},"
+        "\"tags\":[\"fast\",\"reliable\"]}";
+    
+    WeJson js(json_str);
+    std::string output = js.to_string();
+    
+    // 重新解析并比较
+    WeJson js2(output);
+    ASSERT_EQ(js, js2);
+}
+
+// 测试 create_object / create_array
+TEST_F(WeJson_Test, CreateObjectArray)
+{
+    WeJson js;
+    js.create_object();
+    ASSERT_EQ(js.get_type(), JSON_OBJECT_TYPE);
+    js.get_object().add("key", "value");
+    ASSERT_EQ(js.get_object()["key"], "value");
+    
+    WeJson arr;
+    arr.create_array();
+    ASSERT_EQ(arr.get_type(), JSON_ARRAY_TYPE);
+    arr.get_array().add(123);
+    ASSERT_EQ(arr.get_array()[0], 123);
+}
+
+// 测试 JsonValue 类型转换操作符
+TEST_F(WeJson_Test, JsonValueTypeConversion)
+{
+    JsonValue val;
+    
+    // null 转换
+    JsonNull null_val = val;
+    ASSERT_EQ(null_val.to_string(), "null");
+    
+    // 类型不匹配时抛异常
+    val = 12.34;
+    bool exception_thrown = false;
+    try {
+        JsonBool bad = val;  // val 是 number 不是 bool
+    } catch (std::runtime_error &e) {
+        exception_thrown = true;
+    }
+    ASSERT_TRUE(exception_thrown);
+}
+
+// 测试 JsonObject 查找和擦除
+TEST_F(WeJson_Test, JsonObjectFindErase)
+{
+    WeJson js("{}");
+    js.get_object().add("a", 1);
+    js.get_object().add("b", 2);
+    js.get_object().add("c", 3);
+    
+    auto it = js.get_object().find("b");
+    ASSERT_NE(it, js.get_object().end());
+    ASSERT_EQ(it->first, "b");
+    ASSERT_EQ(it->second, 2);
+    
+    auto not_found = js.get_object().find("d");
+    ASSERT_EQ(not_found, js.get_object().end());
+    
+    int erased = js.get_object().erase("b");
+    ASSERT_EQ(erased, 1);
+    ASSERT_EQ(js.get_object().size(), 2);
+    ASSERT_EQ(js.get_object().find("b"), js.get_object().end());
+}
+
+// 测试 JsonValue to_int / to_double
+TEST_F(WeJson_Test, JsonValueToNumber)
+{
+    JsonValue val(12.34);
+    ASSERT_EQ(val.to_int(), 12);
+    ASSERT_EQ(val.to_double(), 12.34);
+    
+    // 非 number 类型抛异常
+    JsonValue str_val("hello");
+    bool throw_on_int = false;
+    try { str_val.to_int(); } catch (std::exception &) { throw_on_int = true; }
+    ASSERT_TRUE(throw_on_int);
+    
+    bool throw_on_double = false;
+    try { str_val.to_double(); } catch (std::exception &) { throw_on_double = true; }
+    ASSERT_TRUE(throw_on_double);
+}
+
+// 测试 format_json 在嵌套结构上正确格式化
+TEST_F(WeJson_Test, FormatJsonComplex)
+{
+    std::string json_str = "{\"name\":\"John\",\"age\":30,\"hobbies\":[\"reading\",\"coding\"]}";
+    WeJson js(json_str);
+    std::string formatted = js.format_json();
+    ASSERT_NE(formatted, "");
+    ASSERT_NE(formatted.find("John"), std::string::npos);
+    ASSERT_NE(formatted.find("reading"), std::string::npos);
 }
 
 }
