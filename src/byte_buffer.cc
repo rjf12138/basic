@@ -248,6 +248,9 @@ ssize_t ByteBuffer::copy_data_to_buffer(const void *data, ssize_t size)
     while (true)
     {
         ssize_t write_size = this->get_cont_write_size() > copy_size ? copy_size : this->get_cont_write_size();
+        if (write_size <= 0) {
+            break;
+        }
         memmove(this->get_write_buffer_ptr(), data_ptr, write_size);
         this->update_write_pos(write_size);
         data_ptr = data_ptr + write_size;
