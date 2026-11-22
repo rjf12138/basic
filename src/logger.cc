@@ -143,12 +143,15 @@ Logger::print_msg(InfoLevel level, int line, std::string file_name, std::string 
 
     va_list arg_ptr;
     va_start(arg_ptr,format);
+    if (format == nullptr) { format = ""; }
     vsnprintf(msg_buff, 4096, format, arg_ptr);
     va_end(arg_ptr);
 
     char strtime[65] = {0};
     time_t curr_time = time(NULL);
-    strftime(strtime, sizeof(strtime), "%Y-%m-%d %H:%M:%S", localtime(&curr_time));
+    struct tm tm_buf;
+    localtime_r(&curr_time, &tm_buf);
+    strftime(strtime, sizeof(strtime), "%Y-%m-%d %H:%M:%S", &tm_buf);
 
     MsgContent tmp_msg;
     tmp_msg.info_level = level;
@@ -183,12 +186,15 @@ Logger::get_msg(InfoLevel level, int line, std::string file_name, std::string fu
 
     va_list arg_ptr;
     va_start(arg_ptr,format);
+    if (format == nullptr) { format = ""; }
     vsnprintf(msg_buff, 4096,format, arg_ptr);
     va_end(arg_ptr);
 
     char strtime[65] = {0};
     time_t curr_time = time(NULL);
-    strftime(strtime, sizeof(strtime), "%Y-%m-%d %H:%M:%S", localtime(&curr_time));
+    struct tm tm_buf;
+    localtime_r(&curr_time, &tm_buf);
+    strftime(strtime, sizeof(strtime), "%Y-%m-%d %H:%M:%S", &tm_buf);
 
     MsgContent tmp_msg;
     tmp_msg.info_level = level;

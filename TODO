@@ -6,3 +6,28 @@
 2. ByteBuffer 当数据长度为0时读取数据会崩溃
    - 已修复：next_read_pos/next_write_pos/update_read_pos/update_write_pos 增加 max_buffer_size_ == 0 检查（消除除零崩溃）
    - 已修复：copy_data_from_buffer 增加空数据前置检查及 read_size <= 0 防御，空 buffer 读取安全返回 0
+
+（全面代码审查后修复的问题）
+3. 内存安全类
+   - JsonValue::operator[]/to_array/to_object 增加类型检查（原非对应类型会空指针崩溃）
+   - JsonValue::operator= 增加自赋值检查（原自赋值 use-after-free）
+   - ByteBuffer::operator[] 增加负索引检查（原负索引越界访问）
+   - JsonString/JsonValue(const char*) 增加 nullptr 防护
+   - ByteBuffer::write_string/read_string 对 size 参数钳制（原越界读/读未初始化内存）
+   - JsonValue::copy default 分支初始化 value_ = nullptr
+4. 逻辑错误类
+   - JsonObject::parse 改为状态机：未闭合对象、缺冒号、缺值、键后跟非字符串等非法输入现在抛异常（原静默接受/丢键）
+   - JsonNumber::parse 严格校验数字格式（原 "1.2.3" 静默接受）
+   - JsonString::parse 解码转义序列（含 \uXXXX），to_string 序列化转义（原输出非法 JSON）
+   - JsonObject::to_string 键名转义
+   - ByteBufferIterator::operator- 改为逻辑偏移计算（原环形环绕时距离算错），参数改 const 引用
+   - ByteBuffer::match 空模式安全返回、空匹配防死循环
+   - format_json 括号改栈式管理（嵌套数组正确格式化）
+   - WeJson::parse 尾部残留检测、行注释 EOF 边界、引号内转义边界修复
+5. 健壮性类
+   - Logger::print_msg/get_msg format 空指针防护、localtime 改 localtime_r
+   - process_control.h 宏去掉 else 分支（消除 else 悬挂）
+   - debug.h 增加 include guard
+   - JsonValue 新增与 const char*/std::string 的比较重载
+   - JsonNumber::to_string 缓冲扩大至 1024（大数不截断）
+   - ByteBuffer::resize 增加 2*size 溢出防护，移除 copy_data_to_buffer 死代码

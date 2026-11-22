@@ -146,7 +146,12 @@ ByteBuffer::resize(ssize_t size)
         return 0;
     }
 
-    ssize_t new_size = 2 * size;
+    ssize_t new_size = 0;
+    if (size > MAX_BUFFER_SIZE / 2) { // 防止 2 * size 溢出
+        new_size = MAX_BUFFER_SIZE;
+    } else {
+        new_size = 2 * size;
+    }
     if (new_size > MAX_BUFFER_SIZE) {
         new_size = MAX_BUFFER_SIZE;
     }
@@ -228,10 +233,7 @@ ssize_t ByteBuffer::copy_data_to_buffer(const void *data, ssize_t size)
     }
 
     if (this->idle_size() <= size) {
-        ssize_t ret = this->resize(max_buffer_size_ + size);
-        if (ret == -1) {
-           return 0;
-        }
+        this->resize(max_buffer_size_ + size);
     }
 
     // if (this->idle_size() < size) {
@@ -321,8 +323,8 @@ ByteBuffer::read_string(std::string &str, ssize_t str_size)
         return 0;
     }
 
-    if (str_size == -1) {
-        str_size = this->data_size();
+    if (str_size < 0 || str_size > this->data_size()) {
+        str_size = this->data_size(); // 钳制,避免读取未初始化内存
     }
 
     char *str_ptr = new char[str_size + 1];
@@ -331,7 +333,7 @@ ByteBuffer::read_string(std::string &str, ssize_t str_size)
         delete[] str_ptr;
         return 0;
     }
-    str_ptr[str_size] = '\0';
+    str_ptr[ret] = '\0';
     str = str_ptr;
     delete[] str_ptr;
 
@@ -409,8 +411,11 @@ ByteBuffer::write_int64(int64_t val)
 ssize_t
 ByteBuffer::write_string(const std::string &str, ssize_t str_size)
 {
-    if (str_size == -1) {
-        str_size = str.length();
+    if (str_size < 0) {
+        str_size = static_cast<ssize_t>(str.length());
+    }
+    if (str_size > static_cast<ssize_t>(str.length())) {
+        str_size = static_cast<ssize_t>(str.length()); // 钳制,避免越界读取 str 内存
     }
     return this->copy_data_to_buffer(str.c_str(), str_size);
 }
@@ -535,7 +540,7 @@ bufftype&
 ByteBuffer::operator[](ssize_t index)
 {
     ssize_t size = this->data_size();
-    if (size <= 0 || index >= size) {
+    if (size <= 0 || index < 0 || index >= size) {
         ;
         throw std::runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR, "Out of range.[index: %d]\n%s\n", index, dump_stack().c_str()));
     }
@@ -549,7 +554,7 @@ bufftype&
 ByteBuffer::operator[](const ssize_t &index) const
 {
     ssize_t size = this->data_size();
-    if (size <= 0 || index >= size) {
+    if (size <= 0 || index < 0 || index >= size) {
         throw std::runtime_error(GLOBAL_GET_MSG(LOG_LEVEL_ERROR, "Out of range.[index: %d]\n%s\n", index, dump_stack()));
     }
 
@@ -867,6 +872,10 @@ std::vector<ByteBuffer>
 ByteBuffer::match(ByteBuffer &regex_str)
 {
     std::vector<ByteBuffer> ret_match_str;
+    if (regex_str.data_size() <= 0 || this->data_size() <= 0) {
+        return ret_match_str;
+    }
+
     std::regex reg(regex_str.str());
     std::string content(this->str());
     std::smatch m;
@@ -875,6 +884,14 @@ ByteBuffer::match(ByteBuffer &regex_str)
     auto end = content.cend();
     for (; std::regex_search(pos, end, m, reg); pos = m.suffix().first)
     {
+        if (m.length() == 0) { // 空匹配时后缀不前进,手动前进避免死循环
+            if (pos == end) {
+                break;
+            }
+            ++pos;
+            continue;
+        }
+
         ByteBuffer match_substr(m.str());
         ret_match_str.push_back(match_substr);
     }
@@ -926,25 +943,28 @@ ByteBufferIterator::operator-(int des)
 }
 
 ssize_t 
-ByteBufferIterator::operator-(ByteBufferIterator &rhs)
+ByteBufferIterator::operator-(const ByteBufferIterator &rhs)
 {
-    if (this->buff_->buffer_ != rhs.buff_->buffer_) {
+    if (this->buff_ == nullptr || rhs.buff_ == nullptr || this->buff_ != rhs.buff_) {
         return 0;
     }
 
     ssize_t max_size = buff_->max_buffer_size_;
+    if (max_size <= 0) {
+        return 0;
+    }
     ssize_t start = this->buff_->start_read_pos_;
 
-    ssize_t right_postion = (rhs.curr_pos_ < this->curr_pos_ ? this->curr_pos_ : rhs.curr_pos_);
-    ssize_t left_postion = (right_postion == rhs.curr_pos_ ? this->curr_pos_ : rhs.curr_pos_);
+    // 将物理位置转为相对于 start_read_pos_ 的逻辑偏移来正确处理循环队列的环绕
+    ssize_t lhs_offset = this->curr_pos_ >= start
+        ? this->curr_pos_ - start
+        : (max_size - start) + this->curr_pos_;
+    ssize_t rhs_offset = rhs.curr_pos_ >= start
+        ? rhs.curr_pos_ - start
+        : (max_size - start) + rhs.curr_pos_;
 
-    ssize_t diff = right_postion - left_postion;
-
-    if (left_postion < start) {
-        return max_size - diff;
-    }
-    
-    return diff;
+    ssize_t diff = lhs_offset - rhs_offset;
+    return diff < 0 ? -diff : diff;
 }
 
 // 前置++

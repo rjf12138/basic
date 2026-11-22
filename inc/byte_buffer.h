@@ -148,7 +148,7 @@ public:
     ByteBufferIterator operator+(ssize_t inc);
     ByteBufferIterator operator-(int des);
     // 求出两个迭代器之间的距离绝对值
-    ssize_t operator-(ByteBufferIterator &rhs);
+    ssize_t operator-(const ByteBufferIterator &rhs);
     // 前置++
     ByteBufferIterator& operator++();
     // 后置++

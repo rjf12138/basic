@@ -258,6 +258,63 @@ TEST_F(ByteBuffer_Test, read_on_empty_buffer)
     ASSERT_EQ(drained.read_only(0, buf, 4), 0);
 }
 
+// 测试 operator[] 负索引抛异常（之前会越界访问内存）
+TEST_F(ByteBuffer_Test, operator_index_negative)
+{
+    ByteBuffer b("abc");
+    bool thrown = false;
+    try { auto c = b[-1]; (void)c; } catch (std::exception &e) { thrown = true; }
+    ASSERT_TRUE(thrown);
+}
+
+// 测试 read_string 参数钳制、match 空模式安全返回
+TEST_F(ByteBuffer_Test, read_match_edge_cases)
+{
+    // str_size 超过数据量时应钳制，不应读入垃圾
+    ByteBuffer b("ab");
+    std::string s;
+    b.read_string(s, 64);
+    ASSERT_EQ(s, "ab");
+
+    // 空模式/空数据 match 应返回空而非死循环
+    ByteBuffer pat;
+    ByteBuffer content("abc");
+    auto res = content.match(pat);
+    ASSERT_EQ(res.size(), 0);
+
+    ByteBuffer empty;
+    auto res2 = empty.match(pat);
+    ASSERT_EQ(res2.size(), 0);
+}
+
+// 测试环形缓冲数据环绕时 find/split/remove/replace 与迭代器距离的正确性
+TEST_F(ByteBuffer_Test, operations_on_wraparound_data)
+{
+    ByteBuffer buff(8); // max_buffer_size = 16
+    buff.write_string("abcdefghijklmn"); // 14 字节
+    std::string tmp;
+    buff.read_string(tmp, 10); // 读掉前 10 字节,剩 "klmn"
+    ASSERT_EQ(buff.str(), "klmn");
+
+    buff.write_string("opqrstuvwx"); // 再写 10 字节,数据环绕
+    ASSERT_EQ(buff.data_size(), 14);
+    ASSERT_EQ(buff.str(), "klmnopqrstuvwx");
+
+    // 环绕状态下迭代器距离
+    auto biter = buff.begin();
+    auto eiter = buff.end();
+    ASSERT_EQ(eiter - biter, 14);
+    ASSERT_EQ(biter - eiter, 14);
+
+    // 后区匹配删除
+    buff.remove(ByteBuffer("op"));
+    ASSERT_EQ(buff.str(), "klmnqrstuvwx");
+
+    // 前区匹配替换
+    ByteBuffer rep = buff.replace(ByteBuffer("uv"), ByteBuffer("UV"));
+    ASSERT_EQ(rep.str(), "klmnqrstUVwx");
+}
+
 // 测试 buffer 空间增长，压力测试
 TEST_F(ByteBuffer_Test, ByteBuffer_increase)
 {

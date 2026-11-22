@@ -12,24 +12,25 @@ void random_str(int setlen, ByteBuffer &buff1, ByteBuffer &buff2)
     buff1.write_int8('"');
 
     for (int i = 0; i < length - 1; ++i) {
-        int8_t ch = static_cast<int8_t>(rand() % 256);
+        unsigned char ch = static_cast<unsigned char>(rand() % 256);
         
-        if (ch == 0) {
-            buff1.write_int8('0');
-            buff2.write_int8('0');
-        } else if (ch == '"') {
-            buff1.write_int8('\\');
-            buff2.write_int8('\\');
-            buff1.write_int8('"');
-            buff2.write_int8('"');
+        if (ch == '"') {
+            buff1.write_int8('\\'); buff2.write_int8('\\');
+            buff1.write_int8('"');  buff2.write_int8('"');
         } else if (ch == '\\') {
-            buff1.write_int8('\\');
-            buff2.write_int8('\\');
-            buff1.write_int8('\\');
-            buff2.write_int8('\\');
+            buff1.write_int8('\\'); buff2.write_int8('\\');
+            buff1.write_int8('\\'); buff2.write_int8('\\');
+        } else if (ch < 0x20) {
+            // 控制字符按 \uXXXX 转义写入(与 escape_json_string 规则一致)
+            char buf[8] = {0};
+            snprintf(buf, sizeof(buf), "\\u%04x", ch);
+            for (char *p = buf; *p != '\0'; ++p) {
+                buff1.write_int8(static_cast<int8_t>(*p));
+                buff2.write_int8(static_cast<int8_t>(*p));
+            }
         } else {
-            buff1.write_int8(ch);
-            buff2.write_int8(ch);
+            buff1.write_int8(static_cast<int8_t>(ch));
+            buff2.write_int8(static_cast<int8_t>(ch));
         }
     }
     buff1.write_int8('"');
@@ -40,42 +41,17 @@ void random_str(int setlen, ByteBuffer &buff1, ByteBuffer &buff2)
 bool str_compare(ByteBuffer &buff1, ByteBuffer &buff2)
 {
     std::string str;
-    buff2.read_string(str);
-    JsonString js_str_t1(str);
-    bool ret = (str.length() == js_str_t1.to_string().length());
-    if (ret == true) {
-        ret = (str == js_str_t1.to_string());
-    }
+    buff2.read_string(str); // 期望的转义文本
 
-    if (ret == false) {
-        LOG_GLOBAL_DEBUG("Test_Str1: %s", str.c_str());
-        return false;
-    }
-
-    JsonString js_str_t2(str.c_str());
-    ret = (str.length() == js_str_t2.to_string().length());
-    if (ret == true) {
-        ret = (str == js_str_t2.to_string());
-    }
-    
-    if (ret == false) {
-        LOG_GLOBAL_DEBUG("Test_Str2: %s", str.c_str());
-        return false;
-    }
-
-    JsonString js_str_t3;
-    
     ByteBuffer::iterator bbegin = buff1.begin();
     ByteBuffer::iterator bend = buff1.end();
 
+    // 解析 buff1(带引号的 JSON 字符串),再序列化,应与转义文本一致
+    JsonString js_str_t3;
     js_str_t3.parse(bbegin, bend);
-    ret = (str.length() == js_str_t3.to_string().length());
-    if (ret == true) {
-        ret = (str == js_str_t3.to_string());
-    }
-    
+    bool ret = (js_str_t3.to_string() == str);
     if (ret == false) {
-        LOG_GLOBAL_DEBUG("Test_Str3: %s", str.c_str());
+        LOG_GLOBAL_DEBUG("Test_Str: %s", str.c_str());
         return false;
     }
 
@@ -547,6 +523,92 @@ TEST_F(WeJson_Test, FormatJsonComplex)
     ASSERT_NE(formatted, "");
     ASSERT_NE(formatted.find("John"), std::string::npos);
     ASSERT_NE(formatted.find("reading"), std::string::npos);
+}
+
+// 测试字符串转义/反转义往返一致,序列化输出为合法 JSON
+TEST_F(WeJson_Test, StringEscapeRoundTrip)
+{
+    WeJson js("{}");
+    js.get_object().add("quote", "a\"b\\c");
+    js.get_object().add("ctrl", "line1\nline2\ttab");
+    js.get_object().add("unicode", std::string("\x01\x02\x1f", 3));
+
+    std::string out = js.to_string();
+
+    // 序列化输出不应包含未转义的控制字符
+    for (char c : out) {
+        ASSERT_TRUE(static_cast<unsigned char>(c) >= 0x20);
+    }
+
+    // 重新解析应得到相等的对象
+    WeJson js2(out);
+    ASSERT_EQ(js2, js);
+    ASSERT_EQ(js2.get_object()["quote"], "a\"b\\c");
+    ASSERT_EQ(js2.get_object()["ctrl"], "line1\nline2\ttab");
+    ASSERT_EQ(js2.get_object()["unicode"], std::string("\x01\x02\x1f", 3));
+}
+
+// 测试非法 JSON 输入能被检测出来(不再静默接受)
+TEST_F(WeJson_Test, InvalidJsonDetection)
+{
+    bool thrown = false;
+
+    // 非法数字:两个小数点
+    thrown = false;
+    try { WeJson js("{\"n\":1.2.3}"); } catch (std::exception &e) { thrown = true; }
+    ASSERT_TRUE(thrown);
+
+    // 键后缺冒号和值
+    thrown = false;
+    try { WeJson js("{\"x\"}"); } catch (std::exception &e) { thrown = true; }
+    ASSERT_TRUE(thrown);
+
+    // 冒号后缺值
+    thrown = false;
+    try { WeJson js("{\"a\":}"); } catch (std::exception &e) { thrown = true; }
+    ASSERT_TRUE(thrown);
+
+    // 未闭合对象
+    thrown = false;
+    try { WeJson js("{\"a\":1"); } catch (std::exception &e) { thrown = true; }
+    ASSERT_TRUE(thrown);
+
+    // 尾部残留
+    thrown = false;
+    try { WeJson js("{} abc"); } catch (std::exception &e) { thrown = true; }
+    ASSERT_TRUE(thrown);
+
+    // 行注释到 EOF(无换行)不应崩溃,应正常解析
+    thrown = false;
+    try { WeJson js("{} // trailing comment"); } catch (std::exception &e) { thrown = true; }
+    ASSERT_FALSE(thrown);
+}
+
+// 测试 JsonValue 类型错误访问抛异常而非崩溃
+TEST_F(WeJson_Test, JsonValueTypeSafety)
+{
+    // 非对象类型调用 operator[] 应抛异常
+    JsonValue jv(1);
+    bool thrown = false;
+    try { jv["k"] = 2; } catch (std::exception &e) { thrown = true; }
+    ASSERT_TRUE(thrown);
+
+    thrown = false;
+    try { jv.to_object(); } catch (std::exception &e) { thrown = true; }
+    ASSERT_TRUE(thrown);
+
+    thrown = false;
+    try { jv.to_array(); } catch (std::exception &e) { thrown = true; }
+    ASSERT_TRUE(thrown);
+
+    // 自赋值安全
+    JsonValue s("hello");
+    s = s;
+    ASSERT_EQ(s.to_string(), "hello");
+
+    // nullptr 字符串构造安全
+    JsonValue nv(static_cast<const char*>(nullptr));
+    ASSERT_EQ(nv.to_string(), "");
 }
 
 }

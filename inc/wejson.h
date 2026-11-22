@@ -113,6 +113,9 @@ public:
     virtual ByteBuffer::iterator parse(ByteBuffer::iterator &value_start_pos, ByteBuffer::iterator &json_end_pos) override;
     virtual std::string to_string(void) const override;
 
+    // 返回字符串的原始值(未转义),用于键名存储、类型转换等内部用途
+    const std::string& raw_value(void) const { return value_; }
+
     bool operator==(const JsonString& rhs) const;
     bool operator!=(const JsonString& rhs) const;
     bool operator==(const std::string& rhs) const;
@@ -260,6 +263,10 @@ public:
 
     bool operator==(const JsonValue& rhs) const;
     bool operator!=(const JsonValue& rhs) const;
+    bool operator==(const std::string &rhs) const;
+    bool operator!=(const std::string &rhs) const;
+    bool operator==(const char *rhs) const;
+    bool operator!=(const char *rhs) const;
 
     JsonValue&       operator[](const std::string &key);
     const JsonValue& operator[](const std::string &key) const;
