@@ -9,7 +9,7 @@
 
 产物:
 
-- `~/.project_manager/repo/basic-0.1.0.pm`(+ `.sha256` 摘要边车)
+- `~/.project_manager/repo/basic-0.1.1.pm`(+ `.sha256` 摘要边车)
 - 包内结构:
 
 ```

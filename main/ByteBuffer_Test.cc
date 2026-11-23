@@ -316,6 +316,23 @@ TEST_F(ByteBuffer_Test, operations_on_wraparound_data)
 }
 
 // 测试 buffer 空间增长，压力测试
+// 测试环形缓冲区跨末尾时 operator+= 的第二段复制
+TEST_F(ByteBuffer_Test, operator_plus_equal_wraparound)
+{
+    ByteBuffer src(8); // max_buffer_size = 16
+    src.write_string("abcdefghijklmn");
+    std::string tmp;
+    src.read_string(tmp, 10);          // 剩 "klmn"
+    src.write_string("opqrstuvwx");    // 写入后数据环绕
+    ASSERT_EQ(src.str(), "klmnopqrstuvwx");
+
+    ByteBuffer dst;
+    dst += src;
+
+    ASSERT_EQ(dst.data_size(), src.data_size());
+    ASSERT_EQ(dst.str(), src.str());
+}
+
 TEST_F(ByteBuffer_Test, ByteBuffer_increase)
 {
     ByteBuffer buff(1);

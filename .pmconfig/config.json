@@ -1,6 +1,6 @@
 {
   "name": "basic",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "path": "/home/ruanjian/workspace/project/basic",
   "uuid": "fda20367-d133-4603-8646-e787064c8737",
   "build_system": "cmake",

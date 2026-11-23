@@ -1,6 +1,6 @@
 {
   "name": "basic",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "basic C++ library: ByteBuffer (ring buffer), WeJson (JSON parser), Logger, ErrHandle, debug helpers",
   "author": "ruanjian",
   "lib_type": "static",

@@ -466,15 +466,20 @@ ByteBuffer::operator+(const ByteBuffer &rhs)
 ByteBuffer& 
 ByteBuffer::operator+=(const ByteBuffer &rhs)
 {
-    ssize_t rhs_read_size = rhs.get_cont_read_size();
-    buffptr rhs_read_ptr = rhs.get_read_buffer_ptr();
+    ssize_t total_size = rhs.data_size();
+    if (total_size <= 0) {
+        return *this;
+    }
 
-    this->copy_data_to_buffer(rhs_read_ptr, rhs_read_size);
-    if (rhs_read_size < rhs.data_size()) {
-        rhs_read_size = rhs.get_cont_read_size();
-        rhs_read_ptr = rhs.get_read_buffer_ptr();
+    // 第一段：从 rhs 当前读位置到缓冲区末尾
+    ssize_t first_size = rhs.get_cont_read_size();
+    if (first_size > 0) {
+        this->copy_data_to_buffer(rhs.get_read_buffer_ptr(), first_size);
+    }
 
-        this->copy_data_to_buffer(rhs_read_ptr, rhs_read_size);
+    // 第二段：环形缓冲区回绕到 rhs.buffer_ 起始位置的部分
+    if (first_size < total_size) {
+        this->copy_data_to_buffer(rhs.buffer_, total_size - first_size);
     }
 
     return *this;
